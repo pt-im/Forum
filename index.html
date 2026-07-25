@@ -3,2325 +3,1989 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>World Forum</title>
+  <title>✨ Pulse – Stats & Upload</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* ===== Base styles (same as before) ===== */
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #0b0d17;
-      color: #e4e6eb;
-      padding: 1rem;
-      min-height: 100vh;
-      overflow: hidden;
+      font-family:"Inter",sans-serif;
+      background:#0b0d15;
+      color:#eef2ff;
+      display:flex;
+      justify-content:center;
+      padding:2rem 1rem;
+      min-height:100vh;
+      background-image:radial-gradient(circle at 10% 20%,rgba(120,119,198,0.15)0%,transparent 50%),
+                       radial-gradient(circle at 90% 80%,rgba(255,119,198,0.15)0%,transparent 50%);
     }
-    .container { max-width: 720px; margin: 0 auto; }
+    .app-container { max-width:780px; width:100%; }
 
-    .intro-overlay {
-      position: fixed;
-      inset: 0;
-      background: #0b0d17;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      animation: fadeOutContainer 0.6s ease-in-out forwards 2.8s;
+    /* ===== SIMPLE INTRO PREVIEW ===== */
+    #intro-overlay {
+      position:fixed;
+      top:0; left:0; width:100%; height:100%;
+      background:#0b0d15;
+      z-index:9999;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      transition:opacity 0.8s ease;
     }
-    .intro-logo {
-      font-size: 4rem;
-      font-weight: 900;
-      letter-spacing: 4px;
-      background: linear-gradient(45deg, #38bdf8, #2dd4bf);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      opacity: 0;
-      transform: scale(0.8);
-      animation: zoomIn 1.2s ease-out forwards 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    #intro-overlay.hidden {
+      opacity:0;
+      pointer-events:none;
     }
-    .intro-logo i { -webkit-text-fill-color: #38bdf8; }
-    .intro-text {
-      font-size: 1.2rem;
-      color: #7a82a0;
-      margin-top: 16px;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: slideUp 0.8s ease-out forwards 1s;
+    .intro-title {
+      font-size:3rem;
+      font-weight:700;
+      background:linear-gradient(135deg,#a78bfa,#f472b6);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      animation: introPop 0.8s ease-out forwards, introFadeOut 0.6s ease-in forwards 1.2s;
+      opacity:0;
+      transform:scale(0.9);
+    }
+    .intro-sub {
+      color:#64748b;
+      font-size:1rem;
+      margin-top:0.8rem;
+      animation: introFadeIn 1s ease-out forwards 0.3s, introFadeOut 0.6s ease-in forwards 1.4s;
+      opacity:0;
     }
     .intro-loader {
-      margin-top: 2rem;
-      width: 48px;
-      height: 48px;
-      border: 3px solid rgba(255,255,255,0.06);
-      border-top-color: #38bdf8;
-      border-radius: 50%;
-      animation: spin 1s linear infinite, fadeInLoader 0.6s ease-out forwards 1.6s;
+      margin-top:1.5rem;
+      width:36px;
+      height:36px;
+      border:3px solid rgba(255,255,255,0.06);
+      border-top-color:#a78bfa;
+      border-radius:50%;
+      animation: spin 1s linear infinite, introFadeIn 1s ease-out forwards 0.5s, introFadeOut 0.6s ease-in forwards 1.6s;
+      opacity:0;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes zoomIn { to { opacity: 1; transform: scale(1); } }
-    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeInLoader { to { opacity: 1; } }
-    @keyframes fadeOutContainer {
-      to {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-      }
+    @keyframes introPop {
+      to { opacity:1; transform:scale(1); }
+    }
+    @keyframes introFadeIn {
+      to { opacity:1; }
+    }
+    @keyframes introFadeOut {
+      to { opacity:0; }
+    }
+    @keyframes spin {
+      to { transform:rotate(360deg); }
     }
 
-    .main-content {
-      opacity: 0;
-      animation: fadeInContent 0.6s ease-out forwards 3.2s;
+    /* Header (unchanged) */
+    .header {
+      display:flex; flex-wrap:wrap; align-items:center; gap:0.75rem;
+      margin-bottom:1.5rem; padding:0 0.5rem;
     }
-    @keyframes fadeInContent { to { opacity: 1; } }
+    .header h1 {
+      font-size:1.8rem; font-weight:700;
+      background:linear-gradient(135deg,#a78bfa,#f472b6);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      margin-right:auto;
+    }
+    .header-controls {
+      display:flex; align-items:center; gap:0.5rem;
+      flex-wrap:wrap;
+    }
+    .header-controls input[type="search"] {
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:40px; padding:0.5rem 1rem 0.5rem 2.5rem;
+      color:#eef2ff; font-family:Inter; font-size:0.9rem;
+      outline:none; width:180px; transition:border 0.2s, width 0.3s;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:0.75rem center;
+      background-size:16px;
+    }
+    .header-controls input[type="search"]:focus {
+      border-color:#a78bfa; width:220px;
+    }
+    .header-controls select {
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:40px; padding:0.5rem 1rem;
+      color:#eef2ff; font-family:Inter; font-size:0.9rem;
+      outline:none; cursor:pointer;
+    }
+    .auth-btn {
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:40px;
+      padding:0.4rem 1rem 0.4rem 0.6rem;
+      color:#eef2ff;
+      font-family:Inter;
+      font-size:0.85rem;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      transition:all 0.2s ease;
+      white-space:nowrap;
+    }
+    .auth-btn:hover {
+      background:rgba(255,255,255,0.15);
+      border-color:#a78bfa;
+    }
+    .auth-btn .avatar-small {
+      width:28px;
+      height:28px;
+      border-radius:50%;
+      object-fit:cover;
+      background:linear-gradient(135deg,#4f46e5,#a78bfa);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:600;
+      font-size:0.7rem;
+      color:white;
+    }
+    .auth-btn i { font-size:1rem; color:#94a3b8; }
+    .auth-btn .email-text {
+      max-width:120px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-size:0.8rem;
+    }
+    .auth-login i { color:#a78bfa; }
 
-    .top-bar {
+    /* Stats Dashboard */
+    .stats-dashboard {
+      background:rgba(255,255,255,0.04);
+      backdrop-filter:blur(20px);
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:24px;
+      padding:1rem 1.5rem;
+      margin-bottom:1.5rem;
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap:0.75rem 1rem;
+    }
+    .stat-item {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+    }
+    .stat-value {
+      font-size:1.4rem;
+      font-weight:700;
+      color:#f1f5f9;
+      line-height:1.2;
+    }
+    .stat-label {
+      font-size:0.7rem;
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+      color:#94a3b8;
+      margin-top:0.1rem;
+    }
+    .stat-item .stat-icon {
+      margin-bottom:0.15rem;
+      font-size:0.9rem;
+      color:#a78bfa;
+    }
+    .stat-online .stat-value { color:#34d399; }
+    .stat-visitors .stat-value { color:#fbbf24; }
+
+    /* Support Widget */
+    #tipButtonContainer {
+      position: relative;
+      display: block;
+      width: 100%;
+      z-index: 1;
+      margin-bottom: 1.5rem;
+    }
+    #showWidgetBtn {
+      background: linear-gradient(135deg, red, orange, yellow, green, blue, indigo, violet);
+      background-size: 400% 400%;
+      border: none;
+      color: white;
+      padding: 14px 20px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(255,0,255,0.6), 0 4px 10px rgba(0,0,0,0.3);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      letter-spacing: 1px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: gradientShift 3s ease infinite, subtleGlow 1.8s ease-in-out infinite alternate;
+      display: block;
+      width: 100%;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    #showWidgetBtn:hover {
+      transform: scale(1.02);
+      animation: gradientShift 3s ease infinite, subtleGlow 0.8s ease-in-out infinite alternate;
+      letter-spacing: 2px;
+    }
+    #showWidgetBtn:active { transform: scale(0.97); }
+    #widgetContainer {
+      display: none;
+      position: absolute;
+      top: calc(100% + 12px);
+      left: 0;
+      width: 100%;
+      min-width: 200px;
+      max-width: 100%;
+      z-index: 9999;
+      background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
+      overflow: hidden;
+      animation: fadeInUp 0.3s ease, glowPulse 2s ease-in-out infinite;
+      box-sizing: border-box;
+    }
+    #widgetContainer .header-bar {
+      background: rgba(0,0,0,0.4);
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #13172b;
-      border-radius: 16px;
-      padding: 0.8rem 1.2rem;
-      margin-bottom: 0.8rem;
-      border: 1px solid #2a2f4b;
-      flex-wrap: wrap;
-      gap: 0.5rem;
     }
-    .top-bar .logo {
-      font-size: 1.4rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #38bdf8, #2dd4bf);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    #widgetContainer .header-bar span {
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      font-weight: bold;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+    }
+    #widgetContainer .header-bar button {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      justify-content: center;
+      transition: all 0.2s ease;
     }
-    .top-bar .visitor-badge {
-      background: #1e2648;
-      padding: 0.3rem 1rem;
-      border-radius: 20px;
-      color: #88b0f0;
-      font-size: 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      border: 1px solid #2a2f4b;
+    #widgetContainer .header-bar button:hover { background: rgba(255,255,255,0.3); }
+    #widgetContainer iframe {
+      border: none;
+      width: 100%;
+      height: 550px;
+      background: #0f0f1a;
+      filter: brightness(0.85) contrast(1.1) invert(0.02) sepia(0.1);
+      display: block;
+      box-sizing: border-box;
     }
-    .top-bar .visitor-badge i { color: #38bdf8; }
-    .top-bar .auth-badge {
-      font-size: 0.8rem;
-      background: #1e2648;
-      padding: 0.3rem 0.8rem;
-      border-radius: 20px;
-      color: #88b0f0;
-    }
-
-    .stats-row {
-      display: flex;
-      justify-content: space-around;
-      background: #13172b;
-      border-radius: 16px;
-      padding: 0.6rem 0.8rem;
-      margin-bottom: 1rem;
-      border: 1px solid #2a2f4b;
+    #widgetContainer .footer-note {
+      background: rgba(0,0,0,0.5);
+      padding: 6px 14px;
+      border-top: 1px solid rgba(255,255,255,0.05);
       text-align: center;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 11px;
+      color: #aaa;
     }
-    .stats-row .stat-item { display: flex; flex-direction: column; }
-    .stats-row .num { font-weight: 700; color: #38bdf8; font-size: 1.2rem; }
-    .stats-row .label { color: #7a82a0; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    .panel { display: none; animation: fadeUp 0.3s ease; }
-    .panel.active { display: block; }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes subtleGlow {
+      0% { box-shadow: 0 0 5px rgba(255,0,255,0.4), 0 4px 10px rgba(0,0,0,0.3); text-shadow: 0 0 2px white; }
+      100% { box-shadow: 0 0 25px rgba(255,255,0,0.8), 0 6px 15px rgba(0,0,0,0.4); text-shadow: 0 0 6px rgba(255,255,255,0.8); }
+    }
+    @keyframes glowPulse {
+      0% { box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1); }
+      100% { box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 0 2px rgba(255,215,0,0.3); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(-8px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .tag-select {
-      width: 100%;
-      padding: 0.6rem 0.9rem;
-      margin-bottom: 0.6rem;
-      background: #0f1426;
-      border: 1px solid #2a2f4b;
-      border-radius: 12px;
-      color: #e4e6eb;
-      font-size: 0.95rem;
+    /* Create Post */
+    .create-post {
+      background:rgba(255,255,255,0.04);
+      backdrop-filter:blur(20px);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:24px; padding:1.5rem;
+      margin-bottom:2rem;
+      box-shadow:0 20px 40px -12px rgba(0,0,0,0.6);
     }
-    .tag-select:focus { outline: none; border-color: #38bdf8; }
+    .create-post .form-row {
+      display:flex; gap:0.75rem; margin-bottom:0.75rem;
+      flex-wrap:wrap;
+    }
+    .create-post .form-row input,
+    .create-post .form-row select {
+      flex:1; min-width:120px;
+      background:rgba(0,0,0,0.3);
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:12px; padding:0.6rem 1rem;
+      color:#eef2ff; font-family:Inter; font-size:0.9rem;
+      outline:none; transition:border 0.2s;
+    }
+    .create-post .form-row input:focus {
+      border-color:#a78bfa;
+    }
+    .create-post textarea {
+      width:100%; background:rgba(0,0,0,0.3);
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:16px; padding:1rem;
+      color:#eef2ff; font-size:0.95rem; font-family:Inter;
+      resize:vertical; min-height:80px; outline:none;
+      transition:border 0.2s;
+    }
+    .create-post textarea:focus { border-color:#a78bfa; }
 
-    .create-thread {
-      background: #13172b;
-      border-radius: 16px;
-      padding: 1rem 1.2rem;
-      margin-bottom: 1.2rem;
-      border: 1px solid #2a2f4b;
+    .upload-row {
+      display:none;
+      gap:0.75rem;
+      margin-bottom:0.75rem;
+      flex-wrap:wrap;
+      align-items:center;
     }
-    .create-thread h3 { font-weight: 500; font-size: 0.95rem; color: #a0a8c0; margin-bottom: 0.6rem; }
-    .create-thread input, .create-thread textarea {
-      width: 100%;
-      padding: 0.6rem 0.9rem;
-      margin-bottom: 0.6rem;
-      background: #0f1426;
-      border: 1px solid #2a2f4b;
-      border-radius: 12px;
-      color: #e4e6eb;
-      font-size: 0.95rem;
+    .upload-row.visible { display:flex; }
+    .upload-row .file-upload {
+      position:relative;
+      flex:2;
+      min-width:150px;
     }
-    .create-thread input:focus, .create-thread textarea:focus {
-      outline: none;
-      border-color: #38bdf8;
+    .upload-row .file-upload input[type="file"] {
+      position:absolute; opacity:0; width:100%; height:100%; cursor:pointer;
     }
-    .create-thread textarea { min-height: 70px; resize: vertical; }
-    .create-thread .row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
-    .create-thread .row input { flex: 2; min-width: 120px; }
-    
-    /* File inputs – always visible */
-    .file-input-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.6rem;
-      flex-wrap: wrap;
+    .upload-row .file-upload .file-label {
+      background:rgba(167,139,250,0.15);
+      border:1px dashed rgba(167,139,250,0.3);
+      border-radius:40px; padding:0.4rem 1.2rem;
+      color:#a78bfa; font-size:0.85rem; cursor:pointer;
+      display:flex; align-items:center; gap:6px;
+      transition:all 0.2s ease;
     }
-    .file-input-wrapper input[type="file"] { display: none; }
-    .file-input-wrapper label {
-      background: #1e2648;
-      padding: 0.3rem 1rem;
-      border-radius: 30px;
-      color: #88b0f0;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
+    .upload-row .file-upload .file-label:hover {
+      background:rgba(167,139,250,0.25);
     }
-    .file-input-wrapper label:hover { background: #2a3360; }
-    .file-input-wrapper .preview {
-      max-width: 60px;
-      max-height: 60px;
-      border-radius: 8px;
-      border: 1px solid #2a2f4b;
-      display: none;
+    .upload-row .file-upload .file-label i { font-size:1rem; }
+    .upload-row .image-preview {
+      max-width:100px; max-height:60px; object-fit:contain;
+      border-radius:8px; border:1px solid rgba(255,255,255,0.1);
+      display:none;
     }
-    .file-input-wrapper .filename {
-      font-size: 0.8rem;
-      color: #7a82a0;
-      margin-left: 0.3rem;
+    .upload-row .upload-hint {
+      color:#64748b;
+      font-size:0.8rem;
+      margin-left:0.25rem;
+      flex:0 0 auto;
     }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #0ea5e9, #06b6d4);
-      border: none;
-      padding: 0.5rem 1.4rem;
-      border-radius: 40px;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.2s;
-      font-size: 0.95rem;
-      white-space: nowrap;
+    .upload-row .blur-check {
+      display:flex; align-items:center; gap:6px;
+      color:#94a3b8; font-size:0.85rem; cursor:pointer;
     }
-    .btn-primary:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(14,165,233,0.3); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .status-msg {
-      font-size: 0.85rem;
-      padding: 0.3rem 0.8rem;
-      border-radius: 30px;
-      display: inline-block;
-      margin-left: 0.5rem;
-    }
-    .status-msg.sending { color: #fbbf24; }
-    .status-msg.sent { color: #2dd4bf; }
-    .status-msg.error { color: #f43f5e; }
-
-    .filter-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-    .filter-row select {
-      background: #13172b;
-      border: 1px solid #2a2f4b;
-      border-radius: 30px;
-      padding: 0.3rem 1rem;
-      color: #e4e6eb;
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
-    .filter-row select:focus { outline: none; border-color: #38bdf8; }
-    .filter-row .tag-badge {
-      background: #1e2648;
-      padding: 0.2rem 0.6rem;
-      border-radius: 12px;
-      font-size: 0.7rem;
-      color: #88b0f0;
+    .upload-row .blur-check input[type="checkbox"] {
+      width:18px; height:18px; accent-color:#a78bfa;
+      cursor:pointer;
     }
 
-    .admin-post { background: #2a0f1a !important; border: 2px solid #ff0033 !important; box-shadow: 0 0 30px rgba(255,0,51,0.2); }
-    .admin-post .author .name { color: #ff0033 !important; font-weight: 800; }
-    .admin-badge {
-      background: #ff0033; color: #fff; font-size: 0.6rem; padding: 0.15rem 0.6rem;
-      border-radius: 20px; margin-left: 0.4rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .create-post .form-actions {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-top:1rem; gap:1rem; flex-wrap:wrap;
     }
-    .mod-post { background: #1f2a0f !important; border: 2px solid #ff8800 !important; box-shadow: 0 0 30px rgba(255,136,0,0.2); }
-    .mod-post .author .name { color: #ff8800 !important; font-weight: 800; }
-    .mod-badge {
-      background: #ff8800; color: #fff; font-size: 0.6rem; padding: 0.15rem 0.6rem;
-      border-radius: 20px; margin-left: 0.4rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .create-post .form-actions .left {
+      display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
     }
-    .unverified-post { background: #1a1a2a !important; border: 2px solid rgba(255,255,255,0.2) !important; box-shadow: 0 0 30px rgba(255,255,255,0.05); }
-    .unverified-post .author .name { color: #aaa !important; font-weight: 400; }
-    .unverified-badge {
-      background: rgba(255,255,255,0.1); color: #aaa; font-size: 0.6rem;
-      padding: 0.15rem 0.6rem; border-radius: 20px; margin-left: 0.4rem;
-      font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-      border: 1px solid rgba(255,255,255,0.1);
+    .create-post .form-actions button {
+      background:linear-gradient(135deg,#7c3aed,#db2777);
+      border:none; padding:0.6rem 1.8rem; border-radius:40px;
+      color:white; font-weight:600; font-size:0.9rem;
+      cursor:pointer; transition:all 0.2s ease;
+      box-shadow:0 4px 15px rgba(124,58,237,0.3);
+      display:flex; align-items:center; gap:8px;
+    }
+    .create-post .form-actions button:hover { transform:scale(1.03); }
+    .create-post .form-actions button:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+    /* Feed */
+    .feed-list { display:flex; flex-direction:column; gap:1.25rem; }
+    .post-card {
+      background:rgba(255,255,255,0.04);
+      backdrop-filter:blur(20px);
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:24px; padding:1.5rem;
+      transition:all 0.25s cubic-bezier(0.2,0,0,1);
+      box-shadow:0 10px 30px -10px rgba(0,0,0,0.4);
+      animation:fadeSlideUp 0.4s ease forwards;
+      opacity:0;
+      position:relative;
+      overflow:hidden;
+    }
+    .post-card:hover {
+      transform:translateY(-2px);
+      box-shadow:0 20px 40px -12px rgba(0,0,0,0.7);
+    }
+    @keyframes fadeSlideUp {
+      from { opacity:0; transform:translateY(20px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+    .post-card.tint-admin { border-left:6px solid #ef4444; }
+    .post-card.tint-mod { border-left:6px solid #f97316; }
+    .post-card.tint-bot { border-left:6px solid #eab308; }
+    .post-card.tint-nouser { border-left:6px solid #22c55e; }
+    .post-card.tint-first { border-left:6px solid #3b82f6; }
+    .post-card.tint-repeat { border-left:6px solid #a855f7; }
+    .post-card.tint-blurred { border-left:6px solid #ec4899; }
+
+    .tint-badge {
+      display:inline-block; font-size:0.6rem; font-weight:600;
+      padding:0.1rem 0.6rem; border-radius:40px;
+      margin-left:8px; text-transform:uppercase;
+      letter-spacing:0.5px;
+    }
+    .tint-badge.admin { background:#ef4444; color:white; }
+    .tint-badge.mod { background:#f97316; color:white; }
+    .tint-badge.bot { background:#eab308; color:#0b0d15; }
+    .tint-badge.nouser { background:#22c55e; color:#0b0d15; }
+    .tint-badge.first { background:#3b82f6; color:white; }
+    .tint-badge.repeat { background:#a855f7; color:white; }
+    .tint-badge.blurred { background:#ec4899; color:white; }
+
+    .post-header {
+      display:flex; align-items:center; gap:0.75rem; margin-bottom:0.5rem;
+    }
+    .avatar {
+      width:40px; height:40px; border-radius:40px;
+      background:linear-gradient(135deg,#4f46e5,#a78bfa);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:600; font-size:1rem; color:white; flex-shrink:0;
+    }
+    .post-user { font-weight:600; font-size:0.95rem; }
+    .post-user span { color:#94a3b8; font-weight:400; margin-left:6px; font-size:0.8rem; }
+    .post-title {
+      font-size:1.2rem; font-weight:700; margin:0.25rem 0 0.5rem 0;
+      color:#f1f5f9;
+    }
+    .post-time {
+      margin-left:auto; font-size:0.75rem; color:#64748b;
+      background:rgba(0,0,0,0.2); padding:4px 10px; border-radius:40px;
+    }
+    .post-content {
+      font-size:1rem; line-height:1.6; color:#f1f5f9;
+      margin-bottom:0.75rem; word-wrap:break-word;
+    }
+    .post-content .hashtag { color:#a78bfa; cursor:pointer; }
+    .post-tags {
+      display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;
+    }
+    .post-tags .tag-pill {
+      background:rgba(167,139,250,0.15);
+      padding:0.2rem 0.7rem; border-radius:40px;
+      font-size:0.7rem; color:#a78bfa;
     }
 
-    .thread-card {
-      background: #13172b;
-      border-radius: 16px;
-      padding: 1rem 1.2rem;
-      margin-bottom: 1rem;
-      border: 1px solid #2a2f4b;
-      transition: all 0.2s ease;
+    .post-image-wrapper {
+      position:relative; margin:0.5rem 0 1rem 0;
+      border-radius:16px; overflow:hidden;
+      border:1px solid rgba(255,255,255,0.05);
+      background:rgba(0,0,0,0.2);
     }
-    .thread-card .author { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; flex-wrap: wrap; }
-    .thread-card .author img { width: 32px; height: 32px; border-radius: 50%; background: #1e2648; border: 2px solid #2a2f4b; }
-    .thread-card .author .name { font-weight: 600; font-size: 0.9rem; }
-    .thread-card .author .time { font-size: 0.7rem; color: #7a82a0; margin-left: auto; }
-    .thread-card .author .tag-badge { background: #1e2648; padding: 0.1rem 0.5rem; border-radius: 10px; font-size: 0.6rem; color: #88b0f0; }
-    .thread-card .author .lock-icon { color: #fbbf24; margin-left: 0.3rem; }
-    .thread-card .author .age-icon { color: #fbbf24; margin-left: 0.3rem; }
-    .thread-card h2 { font-size: 1.1rem; font-weight: 600; margin: 0.2rem 0 0.3rem; }
-    .thread-card .content { color: #c8cee0; line-height: 1.4; margin-bottom: 0.5rem; font-size: 0.95rem; word-wrap: break-word; }
-    .thread-card .thread-image {
-      max-width: 100%;
-      border-radius: 12px;
-      margin: 0.5rem 0;
-      max-height: 300px;
-      object-fit: cover;
+    .post-image-wrapper img {
+      width:100%; height:auto; display:block; transition:filter 0.3s ease;
     }
-    .image-blur { filter: blur(20px); transition: filter 0.3s ease; }
-    .image-blur.unblurred { filter: none; }
+    .post-image-wrapper video {
+      width:100%; height:auto; display:block; transition:filter 0.3s ease;
+    }
+    .post-image-wrapper.blurred img,
+    .post-image-wrapper.blurred video {
+      filter:blur(12px);
+    }
+    .post-image-wrapper .blur-badge {
+      position:absolute; top:12px; right:12px;
+      background:rgba(236,72,153,0.9);
+      color:white; font-size:0.7rem; font-weight:600;
+      padding:0.3rem 0.8rem; border-radius:40px;
+      display:flex; align-items:center; gap:6px;
+      backdrop-filter:blur(4px);
+      border:1px solid rgba(255,255,255,0.1);
+    }
+    .post-image-wrapper .blur-badge i { font-size:0.8rem; }
 
-    /* Video and file display in threads */
-    .media-wrapper {
-      margin: 0.5rem 0;
-      border-radius: 12px;
-      overflow: hidden;
-      max-width: 100%;
+    .post-footer {
+      display:flex; align-items:center; gap:1.5rem;
+      padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.05);
+      flex-wrap:wrap;
     }
-    .media-wrapper video {
-      width: 100%;
-      max-height: 400px;
-      border-radius: 12px;
-      background: #000;
+    .post-footer button {
+      background:none; border:none; color:#94a3b8;
+      font-size:0.9rem; cursor:pointer; padding:4px 8px;
+      border-radius:40px; transition:all 0.15s ease;
+      font-family:Inter; display:flex; align-items:center; gap:6px;
     }
-    .media-wrapper .file-download {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.4rem 1rem;
-      background: #1e2648;
-      border-radius: 30px;
-      color: #88b0f0;
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: 0.2s;
+    .post-footer button i { font-size:1.1rem; transition:transform 0.2s ease; }
+    .post-footer button.liked { color:#f472b6; }
+    .post-footer button.liked i { font-weight:900; transform:scale(1.1); animation:pop 0.3s ease; }
+    @keyframes pop {
+      0% { transform:scale(1); }
+      50% { transform:scale(1.5); }
+      100% { transform:scale(1.1); }
     }
-    .media-wrapper .file-download:hover { background: #2a3360; color: #fff; }
-
-    .thread-card .actions {
-      display: flex;
-      gap: 1.2rem;
-      font-size: 0.8rem;
-      color: #7a82a0;
-      border-top: 1px solid #1e2648;
-      padding-top: 0.5rem;
-      margin-top: 0.3rem;
-      flex-wrap: wrap;
-    }
-    .thread-card .actions span { display: flex; align-items: center; gap: 0.3rem; cursor: pointer; }
-    .thread-card .actions span i { font-size: 0.9rem; }
-    .thread-card .actions .liked { color: #f43f5e; }
-    .show-replies-btn {
-      background: transparent;
-      border: none;
-      color: #38bdf8;
-      font-size: 0.8rem;
-      cursor: pointer;
-      padding: 0.2rem 0;
-      margin-top: 0.3rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    .show-replies-btn:hover { text-decoration: underline; }
-
-    .replies-container { margin-top: 0.8rem; padding-left: 1rem; border-left: 2px solid #2a2f4b; }
-    .reply-item {
-      background: #0f1426;
-      border-radius: 12px;
-      padding: 0.6rem 0.9rem;
-      margin-bottom: 0.5rem;
-      border: 1px solid #1e2648;
-      transition: all 0.2s ease;
-    }
-    .reply-item .author { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.1rem; flex-wrap: wrap; }
-    .reply-item .author img { width: 24px; height: 24px; border-radius: 50%; background: #1e2648; }
-    .reply-item .author .name { font-weight: 500; font-size: 0.8rem; }
-    .reply-item .author .time { font-size: 0.65rem; color: #7a82a0; margin-left: auto; }
-    .reply-item .content { font-size: 0.9rem; color: #c8cee0; margin-top: 0.1rem; word-wrap: break-word; }
-    .reply-item .reply-image {
-      max-width: 100%;
-      border-radius: 8px;
-      margin-top: 0.3rem;
-      max-height: 200px;
-      object-fit: cover;
-    }
-    .reply-item .reply-video {
-      width: 100%;
-      max-height: 300px;
-      border-radius: 8px;
-      background: #000;
-    }
-    .reply-item .reply-file {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.3rem 0.8rem;
-      background: #1e2648;
-      border-radius: 20px;
-      color: #88b0f0;
-      text-decoration: none;
-      font-size: 0.85rem;
-      margin-top: 0.3rem;
-    }
-    .reply-item .reply-file:hover { background: #2a3360; color: #fff; }
-    .reply-item .admin-post { background: #2a0f1a !important; border: 1px solid #ff0033 !important; }
-    .reply-item .mod-post { background: #1f2a0f !important; border: 1px solid #ff8800 !important; }
-    .reply-item .unverified-post { background: #1a1a2a !important; border: 1px solid rgba(255,255,255,0.2) !important; }
-
-    .reply-form {
-      margin-top: 0.6rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-    .reply-form input, .reply-form textarea {
-      flex: 1;
-      min-width: 80px;
-      padding: 0.4rem 0.7rem;
-      background: #0f1426;
-      border: 1px solid #2a2f4b;
-      border-radius: 20px;
-      color: #e4e6eb;
-      font-size: 0.85rem;
-    }
-    .reply-form textarea { flex-basis: 100%; min-height: 40px; border-radius: 12px; }
-    .reply-form .file-input-wrapper {
-      flex-basis: 100%;
-      margin-bottom: 0.3rem;
-    }
-    .reply-form button { background: #1e2648; border: none; padding: 0.4rem 1rem; border-radius: 30px; color: #88b0f0; font-weight: 600; cursor: pointer; font-size: 0.8rem; }
-    .reply-form button:hover { background: #2a3360; color: white; }
-    .reply-form button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .lock-overlay, .age-overlay {
-      background: rgba(0,0,0,0.85);
-      padding: 1rem;
-      border-radius: 12px;
-      text-align: center;
-      margin: 0.5rem 0;
-    }
-    .lock-overlay input, .age-overlay input {
-      background: #0f1426;
-      border: 1px solid #2a2f4b;
-      color: #e4e6eb;
-      padding: 0.5rem;
-      border-radius: 8px;
-      margin: 0.3rem;
-    }
-    .lock-overlay button, .age-overlay button {
-      background: #0ea5e9;
-      border: none;
-      padding: 0.3rem 1rem;
-      border-radius: 30px;
-      color: white;
-      cursor: pointer;
-    }
-    .lock-overlay button:hover, .age-overlay button:hover { background: #0284c7; }
-
-    .threads-loading {
-      text-align: center;
-      padding: 2rem;
-      color: #7a82a0;
-    }
-    .threads-loading i { font-size: 2rem; display: block; margin-bottom: 0.5rem; color: #38bdf8; }
-
-    .hidden { display: none !important; }
-    .text-muted { color: #7a82a0; font-size: 0.85rem; }
-
-    @media (max-width: 480px) {
-      .top-bar { flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
-      .stats-row .stat-item .num { font-size: 1rem; }
-      .create-thread .row { flex-direction: column; align-items: stretch; }
-      .create-thread .row input { flex: auto; }
-      .btn-primary { width: 100%; justify-content: center; }
-      .filter-row { flex-direction: column; align-items: stretch; }
-      .file-input-wrapper { flex-wrap: wrap; }
+    .post-footer button:hover { color:#eef2ff; }
+    .post-footer button.liked:hover { color:#ec4899; }
+    .post-footer button.bookmarked { color:#fbbf24; }
+    .post-footer button.bookmarked i { font-weight:900; }
+    .post-footer .comment-toggle { color:#94a3b8; cursor:pointer; }
+    .post-footer .comment-toggle:hover { color:#eef2ff; }
+    .post-footer .blur-toggle { color:#94a3b8; cursor:pointer; }
+    .post-footer .blur-toggle:hover { color:#eef2ff; }
+    .badge-new {
+      background:#f472b6; color:#0b0d15; font-size:0.6rem;
+      font-weight:700; padding:0.15rem 0.5rem; border-radius:40px;
+      margin-left:0.5rem; text-transform:uppercase;
     }
 
-    .auth-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-      padding: 1.5rem;
+    .comments-section {
+      margin-top:1rem;
+      border-top:1px solid rgba(255,255,255,0.06);
+      padding-top:1rem;
+      display:none;
     }
-    .auth-modal.active { display: flex; }
-    .auth-box {
-      background: #1a1a2e;
-      padding: 2rem 2rem 1.8rem;
-      border-radius: 1.25rem;
-      max-width: 400px;
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.06);
-      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
-      animation: slideUp 0.25s ease;
+    .comments-section.open { display:block; }
+    .comment-item {
+      display:flex; gap:0.75rem; margin-bottom:0.75rem; align-items:flex-start;
     }
-    .auth-box h2 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 0.2rem;
-      text-align: center;
+    .comment-avatar {
+      width:28px; height:28px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:600; font-size:0.7rem; color:white;
+      flex-shrink:0; background:#4f46e5;
     }
-    .auth-box .sub {
-      color: #7a82a0;
-      text-align: center;
-      margin-bottom: 1.5rem;
-      font-size: 0.95rem;
+    .comment-body {
+      background:rgba(255,255,255,0.04);
+      border-radius:12px; padding:0.5rem 0.75rem; flex:1;
     }
-    .auth-box input {
-      width: 100%;
-      padding: 0.7rem 1rem;
-      margin-bottom: 0.8rem;
-      background: #0f1426;
-      border: 1px solid #2a2f4b;
-      border-radius: 12px;
-      color: #e4e6eb;
-      font-size: 1rem;
+    .comment-body .comment-user {
+      font-weight:500; font-size:0.8rem; color:#cbd5e1;
     }
-    .auth-box input:focus {
-      outline: none;
-      border-color: #38bdf8;
+    .comment-body .comment-user span {
+      color:#64748b; font-weight:400; margin-left:4px; font-size:0.7rem;
     }
-    .auth-box .auth-btn {
-      width: 100%;
-      padding: 0.7rem;
-      border: none;
-      border-radius: 40px;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: 0.2s;
-      color: #fff;
-      background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+    .comment-body .comment-text {
+      font-size:0.9rem; margin-top:2px; color:#e2e8f0;
     }
-    .auth-box .auth-btn:hover { transform: scale(1.01); box-shadow: 0 0 20px rgba(14,165,233,0.3); }
-    .auth-box .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .auth-box .auth-switch {
-      text-align: center;
-      margin-top: 1rem;
-      color: #7a82a0;
-      font-size: 0.9rem;
+    .comment-form {
+      display:flex; gap:0.5rem; margin-top:0.75rem;
     }
-    .auth-box .auth-switch a {
-      color: #38bdf8;
-      cursor: pointer;
-      text-decoration: none;
+    .comment-form input {
+      flex:1; background:rgba(0,0,0,0.3);
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:40px; padding:0.5rem 1rem;
+      color:#eef2ff; font-family:Inter; font-size:0.85rem;
+      outline:none; transition:border 0.2s;
     }
-    .auth-box .auth-switch a:hover { text-decoration: underline; }
-    .auth-box .auth-error {
-      color: #f43f5e;
-      font-size: 0.85rem;
-      text-align: center;
-      margin-bottom: 0.5rem;
-      min-height: 1.2rem;
+    .comment-form input:focus { border-color:#a78bfa; }
+    .comment-form button {
+      background:rgba(167,139,250,0.2);
+      border:1px solid rgba(167,139,250,0.3);
+      border-radius:40px; padding:0.5rem 1.2rem;
+      color:#a78bfa; font-weight:600; font-size:0.8rem;
+      cursor:pointer; transition:all 0.2s ease;
+      white-space:nowrap;
     }
-    .auth-box .auth-close {
-      float: right;
-      background: none;
-      border: none;
-      color: #aaa;
-      font-size: 1.8rem;
-      cursor: pointer;
-      transition: 0.2s;
-      line-height: 1;
-    }
-    .auth-box .auth-close:hover { color: #fff; }
+    .comment-form button:hover { background:rgba(167,139,250,0.35); }
+    .comment-form button:disabled { opacity:0.5; cursor:not-allowed; }
 
-    .tab-btn {
-      background: #13172b;
-      border: 1px solid #2a2f4b;
-      padding: 0.5rem 1.2rem;
-      border-radius: 30px;
-      color: #e4e6eb;
-      cursor: pointer;
-      transition: 0.2s;
-      font-family: inherit;
-      font-size: 0.95rem;
+    .load-more-container { text-align:center; margin-top:1.5rem; }
+    .load-more-btn {
+      background:#334155; border:none; color:white;
+      padding:0.8rem 2rem; border-radius:40px;
+      cursor:pointer; font-family:Inter; font-weight:600;
+      transition:all 0.2s ease;
     }
-    .tab-btn:hover {
-      background: #1e2648;
-      border-color: #3a4065;
-    }
-    .tab-btn.active {
-      background: #1e2648;
-      border-color: #38bdf8;
-      color: #fff;
-    }
-    .members-tab {
-      background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
-      border-color: transparent !important;
-      color: #0b0d17 !important;
-      font-weight: 700 !important;
-    }
-    .members-tab:hover {
-      background: linear-gradient(135deg, #fcd34d, #d97706) !important;
-      color: #0b0d17 !important;
-    }
-    .members-tab.logged-in {
-      background: linear-gradient(135deg, #2dd4bf, #0ea5e9) !important;
-      color: #fff !important;
-    }
-    .members-tab.logged-in:hover {
-      background: linear-gradient(135deg, #5eead4, #38bdf8) !important;
-    }
-    .tabs-container {
-      display: flex;
-      gap: 0.4rem;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-    }
+    .load-more-btn:hover { background:#475569; }
+    .load-more-btn:disabled { opacity:0.5; cursor:not-allowed; }
+    .loading-more { color:#64748b; display:none; }
 
-    /* Gallery */
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 1rem;
-      margin-top: 1rem;
+    .skeleton {
+      background:rgba(255,255,255,0.04); border-radius:24px;
+      padding:1.5rem; border:1px solid rgba(255,255,255,0.04);
+      animation:pulse 1.5s ease-in-out infinite;
     }
-    .gallery-item {
-      aspect-ratio: 1 / 1;
-      background: rgba(255,255,255,0.04);
-      border-radius: 16px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.06);
-      transition: 0.3s;
-      cursor: pointer;
-      position: relative;
+    @keyframes pulse { 0%,100% { opacity:0.4; } 50% { opacity:0.7; } }
+    .skeleton .line {
+      height:14px; background:rgba(255,255,255,0.06);
+      border-radius:10px; margin-bottom:10px;
     }
-    .gallery-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .gallery-item:hover {
-      border-color: #0ea5e9;
-      transform: scale(1.02);
-      box-shadow: 0 0 30px rgba(14,165,233,0.15);
-    }
+    .skeleton .line.short { width:40%; }
+    .skeleton .line.long { width:100%; }
 
-    /* Library – Productivity threads list */
-    .library-list {
-      list-style: none;
-      padding: 0;
+    /* Login Modal */
+    .modal-overlay {
+      position:fixed;
+      top:0; left:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.7);
+      backdrop-filter:blur(8px);
+      display:none;
+      justify-content:center;
+      align-items:center;
+      z-index:10000;
     }
-    .library-list li {
-      padding: 0.8rem 1.2rem;
-      margin-bottom: 0.6rem;
-      background: rgba(255,255,255,0.02);
-      border-radius: 12px;
-      border-left: 3px solid #2dd4bf;
+    .modal-overlay.open { display:flex; }
+    .modal-content {
+      background:#1e293b;
+      padding:2rem;
+      border-radius:24px;
+      max-width:400px;
+      width:90%;
+      box-shadow:0 40px 80px rgba(0,0,0,0.8);
+      border:1px solid rgba(255,255,255,0.06);
+      position:relative;
     }
-    .library-list li a {
-      color: #94a3b8;
-      text-decoration: none;
-      font-size: 1.05rem;
-      transition: 0.2s;
-      display: block;
+    .modal-content h2 {
+      font-size:1.5rem;
+      margin-bottom:1.5rem;
+      background:linear-gradient(135deg,#a78bfa,#f472b6);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      text-align:center;
     }
-    .library-list li a:hover {
-      color: #38bdf8;
-      padding-left: 6px;
+    .modal-content .form-group {
+      margin-bottom:1rem;
+    }
+    .modal-content .form-group label {
+      display:block;
+      color:#94a3b8;
+      font-size:0.85rem;
+      margin-bottom:0.3rem;
+    }
+    .modal-content .form-group input {
+      width:100%;
+      background:rgba(0,0,0,0.3);
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:12px;
+      padding:0.7rem 1rem;
+      color:#eef2ff;
+      font-family:Inter;
+      font-size:0.95rem;
+      outline:none;
+      transition:border 0.2s;
+    }
+    .modal-content .form-group input:focus {
+      border-color:#a78bfa;
+    }
+    .modal-content .modal-actions {
+      display:flex;
+      gap:0.75rem;
+      margin-top:1.5rem;
+      flex-wrap:wrap;
+    }
+    .modal-content .modal-actions button {
+      flex:1;
+      padding:0.6rem;
+      border:none;
+      border-radius:40px;
+      font-weight:600;
+      font-size:0.9rem;
+      cursor:pointer;
+      transition:all 0.2s ease;
+      font-family:Inter;
+      min-width:80px;
+    }
+    .modal-content .modal-actions .btn-primary {
+      background:linear-gradient(135deg,#7c3aed,#db2777);
+      color:white;
+      box-shadow:0 4px 15px rgba(124,58,237,0.3);
+    }
+    .modal-content .modal-actions .btn-primary:hover {
+      transform:scale(1.02);
+    }
+    .modal-content .modal-actions .btn-secondary {
+      background:rgba(255,255,255,0.08);
+      color:#eef2ff;
+      border:1px solid rgba(255,255,255,0.1);
+    }
+    .modal-content .modal-actions .btn-secondary:hover {
+      background:rgba(255,255,255,0.15);
+    }
+    .modal-content .modal-close-btn {
+      position:absolute;
+      top:12px;
+      right:16px;
+      background:none;
+      border:none;
+      color:#94a3b8;
+      font-size:1.4rem;
+      cursor:pointer;
+      transition:color 0.2s;
+      font-family:Inter;
+    }
+    .modal-content .modal-close-btn:hover {
+      color:#eef2ff;
+    }
+    .modal-error {
+      color:#f87171;
+      font-size:0.85rem;
+      margin-top:0.5rem;
+      text-align:center;
+      display:none;
     }
 
-    /* Members area */
-    .members-area {
-      background: #13172b;
-      border-radius: 16px;
-      padding: 1.5rem;
-      border: 1px solid #2a2f4b;
-      margin-top: 0.5rem;
-    }
-    .members-area h2 {
-      font-size: 1.4rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: #2dd4bf;
-    }
-    .members-area .member-create {
-      background: #0f1426;
-      border-radius: 12px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border: 1px solid #1e2648;
-    }
-    .members-area .member-create input,
-    .members-area .member-create textarea,
-    .members-area .member-create select {
-      width: 100%;
-      padding: 0.5rem 0.8rem;
-      margin-bottom: 0.5rem;
-      background: #0b0d17;
-      border: 1px solid #2a2f4b;
-      border-radius: 8px;
-      color: #e4e6eb;
-      font-size: 0.95rem;
-    }
-    .members-area .member-create input:focus,
-    .members-area .member-create textarea:focus,
-    .members-area .member-create select:focus {
-      outline: none;
-      border-color: #38bdf8;
-    }
-    .members-area .member-create textarea { min-height: 60px; resize: vertical; }
-    .members-area .member-thread {
-      background: #0f1426;
-      border-radius: 12px;
-      padding: 0.8rem 1rem;
-      margin-bottom: 0.8rem;
-      border: 1px solid #1e2648;
-    }
-    .members-area .member-thread .author {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.2rem;
-      flex-wrap: wrap;
-    }
-    .members-area .member-thread .author img {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: #1e2648;
-    }
-    .members-area .member-thread .author .name {
-      font-weight: 600;
-      font-size: 0.85rem;
-    }
-    .members-area .member-thread .author .time {
-      font-size: 0.65rem;
-      color: #7a82a0;
-      margin-left: auto;
-    }
-    .members-area .member-thread .author .tag-badge {
-      background: #1e2648;
-      padding: 0.1rem 0.4rem;
-      border-radius: 8px;
-      font-size: 0.6rem;
-      color: #88b0f0;
-    }
-    .members-area .member-thread h3 {
-      font-size: 1.05rem;
-      font-weight: 600;
-      margin: 0.2rem 0 0.2rem;
-    }
-    .members-area .member-thread .content {
-      font-size: 0.9rem;
-      color: #c8cee0;
-      line-height: 1.4;
-    }
-    .members-area .member-thread .actions {
-      display: flex;
-      gap: 0.8rem;
-      font-size: 0.75rem;
-      color: #7a82a0;
-      margin-top: 0.3rem;
-      border-top: 1px solid #1e2648;
-      padding-top: 0.3rem;
-    }
-    .members-area .member-thread .actions span { display: flex; align-items: center; gap: 0.2rem; cursor: pointer; }
-    .members-area .member-thread .actions .liked { color: #f43f5e; }
-
-    .member-replies {
-      margin-top: 0.5rem;
-      padding-left: 1rem;
-      border-left: 2px solid #2a2f4b;
-    }
-    .member-reply {
-      background: #0b0d17;
-      border-radius: 8px;
-      padding: 0.5rem 0.8rem;
-      margin-bottom: 0.4rem;
-      border: 1px solid #1a1a2e;
-    }
-    .member-reply .author {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      margin-bottom: 0.1rem;
-    }
-    .member-reply .author img {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #1e2648;
-    }
-    .member-reply .author .name {
-      font-weight: 500;
-      font-size: 0.75rem;
-    }
-    .member-reply .author .time {
-      font-size: 0.6rem;
-      color: #7a82a0;
-      margin-left: auto;
-    }
-    .member-reply .content {
-      font-size: 0.85rem;
-      color: #c8cee0;
-    }
-    .member-reply-form {
-      display: flex;
-      gap: 0.3rem;
-      margin-top: 0.4rem;
-      flex-wrap: wrap;
-    }
-    .member-reply-form input,
-    .member-reply-form textarea {
-      flex: 1;
-      min-width: 60px;
-      padding: 0.3rem 0.6rem;
-      background: #0b0d17;
-      border: 1px solid #2a2f4b;
-      border-radius: 20px;
-      color: #e4e6eb;
-      font-size: 0.8rem;
-    }
-    .member-reply-form textarea { flex-basis: 100%; min-height: 30px; border-radius: 8px; }
-    .member-reply-form button {
-      background: #1e2648;
-      border: none;
-      padding: 0.3rem 0.8rem;
-      border-radius: 30px;
-      color: #88b0f0;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.75rem;
-    }
-    .member-reply-form button:hover { background: #2a3360; color: #fff; }
-
-    .signout-btn {
-      margin-top: 1rem;
-      background: #dc2626;
-      border: none;
-      padding: 0.4rem 1.2rem;
-      border-radius: 30px;
-      color: #fff;
-      cursor: pointer;
-      font-weight: 500;
-      transition: 0.2s;
-      font-family: inherit;
-    }
-    .signout-btn:hover { background: #b91c1c; }
-
-    /* Admin Embed */
-    #adminEmbed { display: none; }
-    #adminEmbed.show { display: block; }
-
-    .game-toggle {
-      position: fixed;
-      top: 24px;
-      right: 24px;
-      z-index: 10000;
-      background: radial-gradient(circle at 30% 25%, #9b59b6, #6c3483);
-      border: none;
-      outline: none;
-      cursor: pointer;
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 12px #b77ddf, 0 0 20px #8e44ad, 0 4px 15px rgba(0,0,0,0.3);
-      transition: all 0.25s cubic-bezier(0.2, 0.9, 0.5, 1.2);
-    }
-    .game-toggle .controller-emoji {
-      font-size: 42px;
-      line-height: 1;
-      display: inline-block;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-      transition: transform 0.2s ease;
-    }
-    .game-toggle:hover {
-      transform: scale(1.1);
-      background: radial-gradient(circle at 35% 30%, #a569bd, #7d3c98);
-      box-shadow: 0 0 24px #c39bd3, 0 0 32px #9b59b6, 0 6px 20px rgba(0,0,0,0.4);
-    }
-    .game-toggle:hover .controller-emoji {
-      transform: scale(1.08) rotate(3deg);
-    }
-    .game-toggle:active {
-      transform: scale(0.94);
-      box-shadow: 0 0 18px #b77ddf, 0 0 28px #8e44ad;
-      transition: 0.05s;
-    }
-    .game-toggle .gamer-tooltip {
-      position: absolute;
-      right: 76px;
-      left: auto;
-      background: rgba(106, 90, 205, 0.95);
-      backdrop-filter: blur(8px);
-      color: white;
-      font-weight: 600;
-      font-size: 13px;
-      padding: 6px 14px;
-      border-radius: 60px;
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      transform: translateX(8px);
-      transition: opacity 0.2s, transform 0.2s;
-      font-family: inherit;
-      letter-spacing: 0.3px;
-      box-shadow: 0 2px 12px rgba(106, 90, 205, 0.5);
-      border: 1px solid rgba(255,255,200,0.3);
-    }
-    .game-toggle:hover .gamer-tooltip {
-      opacity: 1;
-      transform: translateX(0);
+    /* Shortcuts modal */
+    #shortcutsModal .modal-content {
+      max-width:500px;
     }
 
-    .tip-panel {
-      position: fixed;
-      top: 100px;
-      right: 24px;
-      left: auto;
-      z-index: 9999;
-      background: transparent !important;
-      background-color: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      backdrop-filter: none !important;
-      width: 400px;
-      max-width: calc(100vw - 48px);
-      display: none !important;
-      opacity: 0;
-      transform: translateY(-12px) scale(0.97);
-      transition: opacity 0.28s cubic-bezier(0.2, 0.9, 0.4, 1.2), transform 0.28s cubic-bezier(0.2, 0.9, 0.4, 1.2);
-      pointer-events: none;
-    }
-    .tip-panel.show {
-      display: block !important;
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      pointer-events: auto;
-    }
-    .iframe-wrapper {
-      background: transparent !important;
-      border: none !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      border-radius: 24px;
-      overflow: hidden;
-    }
-    .ko-fi-iframe {
-      display: block;
-      width: 100%;
-      border: none !important;
-      background: transparent;
-      margin: 0;
-      padding: 0;
-    }
-    @media (max-width: 560px) {
-      .game-toggle {
-        top: 16px;
-        right: 16px;
-        width: 56px;
-        height: 56px;
-      }
-      .controller-emoji {
-        font-size: 36px;
-      }
-      .tip-panel {
-        top: 84px;
-        right: 16px;
-        width: calc(100vw - 32px);
-        max-width: calc(100vw - 32px);
-      }
-      .game-toggle .gamer-tooltip { display: none; }
-    }
-    .tip-panel,
-    .tip-panel *:not(iframe):not(iframe *),
-    .iframe-wrapper,
-    .iframe-wrapper > *:not(iframe) {
-      background: transparent !important;
-      background-color: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      backdrop-filter: none !important;
-    }
-    iframe.ko-fi-iframe { background: transparent !important; }
-    .game-toggle:focus-visible { outline: 3px solid #bb8fce; outline-offset: 4px; }
+    .empty-state { text-align:center; padding:3rem 1rem; color:#64748b; }
+    .empty-state i { font-size:3rem; margin-bottom:1rem; opacity:0.3; }
 
-    /* Fullscreen overlay for gallery images */
-    .fullscreen-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.92);
-      backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 10001;
-      padding: 1.5rem;
-    }
-    .fullscreen-overlay.active { display: flex; }
-    .fullscreen-overlay img {
-      max-width: 95%;
-      max-height: 90vh;
-      object-fit: contain;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-    }
-    .fullscreen-overlay .close-btn {
-      position: absolute;
-      top: 1.5rem;
-      right: 2rem;
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 2.5rem;
-      cursor: pointer;
-      opacity: 0.7;
-      transition: 0.2s;
-      z-index: 10;
-    }
-    .fullscreen-overlay .close-btn:hover { opacity: 1; transform: rotate(90deg); }
-    .fullscreen-overlay .caption {
-      position: absolute;
-      bottom: 2rem;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.6);
-      color: rgba(255,255,255,0.8);
-      padding: 0.4rem 1.2rem;
-      border-radius: 30px;
-      font-size: 0.85rem;
-      backdrop-filter: blur(4px);
-      pointer-events: none;
-      white-space: nowrap;
-    }
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:#334155; border-radius:10px; }
+    ::-webkit-scrollbar-thumb:hover { background:#475569; }
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(30px) scale(0.96); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
+    @media (max-width:600px) {
+      .create-post .form-row { flex-direction:column; }
+      .upload-row { flex-direction:column; align-items:stretch; }
+      .create-post .form-actions { flex-direction:column; align-items:stretch; }
+      .create-post .form-actions .left { justify-content:center; }
+      .post-footer { flex-wrap:wrap; gap:0.75rem; }
+      .stats-dashboard { grid-template-columns: repeat(2, 1fr); }
+      .header-controls .auth-btn .email-text { display:none; }
     }
   </style>
 </head>
 <body>
 
-  <div class="intro-overlay">
-    <div class="intro-logo"><i class="fas fa-globe-americas"></i> World</div>
-    <div class="intro-text">Your universe awaits</div>
-    <div class="intro-loader"></div>
+<!-- ===== SIMPLE INTRO PREVIEW ===== -->
+<div id="intro-overlay">
+  <div class="intro-title">✨ Pulse</div>
+  <div class="intro-sub">Your universe awaits</div>
+  <div class="intro-loader"></div>
+</div>
+
+<!-- ===== Login Modal ===== -->
+<div id="loginModal" class="modal-overlay">
+  <div class="modal-content">
+    <button class="modal-close-btn" id="loginModalClose">&times;</button>
+    <h2 id="authTitle">Welcome Back</h2>
+    <div class="form-group">
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" placeholder="you@example.com" />
+    </div>
+    <div class="form-group">
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" />
+    </div>
+    <div class="modal-error" id="loginError"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="loginSignInBtn">Sign In</button>
+      <button class="btn-secondary" id="loginSignUpBtn">Sign Up</button>
+    </div>
+    <div style="text-align:center;margin-top:0.8rem;font-size:0.8rem;color:#64748b;" id="authSwitchText">
+      Don't have an account? <a id="authSwitchLink" style="color:#a78bfa;cursor:pointer;">Sign Up</a>
+    </div>
   </div>
+</div>
 
-  <div class="main-content">
-    <div class="container">
+<!-- ===== Shortcuts Modal ===== -->
+<div id="shortcutsModal" class="modal-overlay">
+  <div class="modal-content">
+    <h2><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h2>
+    <div class="shortcut-grid">
+      <span class="key"><kbd>?</kbd></span><span class="desc">Toggle help</span>
+      <span class="key"><kbd>Esc</kbd></span><span class="desc">Close modal / search</span>
+      <span class="key"><kbd>⌘K</kbd> or <kbd>Ctrl+K</kbd></span><span class="desc">Focus search</span>
+      <span class="key"><kbd>j</kbd> / <kbd>k</kbd></span><span class="desc">Navigate posts</span>
+      <span class="key"><kbd>n</kbd></span><span class="desc">New post focus</span>
+    </div>
+    <button class="modal-close" id="modalCloseBtn">Close</button>
+  </div>
+</div>
 
-      <div class="top-bar">
-        <div class="logo"><i class="fas fa-globe-americas"></i> World</div>
-        <div class="visitor-badge" id="visitorBadge">
-          <i class="fas fa-user"></i>
-          <span id="visitorCount">0</span>
-        </div>
-        <div class="auth-badge" id="auth-status"><i class="fas fa-user-secret"></i> Anonymous</div>
-      </div>
+<!-- ===== App ===== -->
+<div class="app-container">
 
-      <div class="tabs-container">
-        <button class="tab-btn active" data-tab="home">🌍 Home</button>
-        <button class="tab-btn" data-tab="games">🎮 Games</button>
-        <button class="tab-btn" data-tab="gallery">🖼 Gallery</button>
-        <button class="tab-btn" data-tab="library">📚 Library</button>
-        <button class="tab-btn members-tab" id="membersTab">🔒 Members-Only</button>
-      </div>
-
-      <div class="stats-row">
-        <div class="stat-item"><span class="num" id="stat-threads">0</span><span class="label">Threads</span></div>
-        <div class="stat-item"><span class="num" id="stat-replies">0</span><span class="label">Replies</span></div>
-        <div class="stat-item"><span class="num" id="stat-online">0</span><span class="label">Online</span></div>
-        <div class="stat-item"><span class="num" id="stat-total">0</span><span class="label">Total Visits</span></div>
-      </div>
-
-      <!-- HOME PANEL -->
-      <div class="panel active" id="panel-home">
-        <div class="create-thread">
-          <h3><i class="fas fa-pen-fancy" style="color:#2dd4bf;"></i> New thread</h3>
-          <input type="text" id="thread-title" placeholder="Title..." />
-          <textarea id="thread-content" placeholder="Write your first post..."></textarea>
-          <select id="thread-tag" class="tag-select" required>
-            <option value="">Select a tag...</option>
-            <option value="Finance">Finance</option><option value="Gaming">Gaming</option>
-            <option value="Technology">Technology</option><option value="Marketing">Marketing</option>
-            <option value="Health">Health</option><option value="Travel">Travel</option>
-            <option value="Food">Food</option><option value="DIY">DIY</option>
-            <option value="Parenting">Parenting</option><option value="Productivity">Productivity</option>
-            <option value="Pets">Pets</option><option value="Fashion">Fashion</option>
-          </select>
-          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0;">
-            <label style="display: flex; align-items: center; gap: 0.3rem; color: #aaa;">
-              <input type="checkbox" id="thread-blur" /> Blur image
-            </label>
-            <input type="text" id="thread-password" placeholder="Password lock (optional)" style="flex:1; min-width:120px; background:#0f1426; border:1px solid #2a2f4b; border-radius:12px; color:#e4e6eb; padding:0.6rem 0.9rem;" />
-            <input type="number" id="thread-age" placeholder="Min age (0=none)" style="width:100px; background:#0f1426; border:1px solid #2a2f4b; border-radius:12px; color:#e4e6eb; padding:0.6rem 0.9rem;" />
-          </div>
-          
-          <!-- File inputs – always visible -->
-          <div class="file-input-wrapper">
-            <input type="file" id="thread-image-input" accept="image/*" />
-            <label for="thread-image-input"><i class="fas fa-image"></i> Add image</label>
-            <img id="thread-image-preview" class="preview" alt="preview" />
-            <span class="filename" id="thread-image-filename"></span>
-          </div>
-          <div class="file-input-wrapper">
-            <input type="file" id="thread-media-input" accept="video/*,.zip,.rar,.7z,.pdf,.doc,.docx,.txt" />
-            <label for="thread-media-input"><i class="fas fa-video"></i> Add video or file</label>
-            <span class="filename" id="thread-media-filename"></span>
-          </div>
-
-          <div class="row" style="display:flex; flex-wrap:wrap; gap:0.6rem; align-items:center;">
-            <input type="text" id="author-name" placeholder="Your name (optional)" style="flex:2; min-width:120px;" />
-            <button class="btn-primary" id="create-thread-btn"><i class="fas fa-paper-plane"></i> Post</button>
-            <span id="thread-status" class="status-msg" style="display:none;"></span>
-          </div>
-        </div>
-
-        <div class="filter-row">
-          <span style="font-size:0.85rem; color:#7a82a0;">Filter by tag:</span>
-          <select id="publicTagFilter">
-            <option value="all">All tags</option>
-            <option value="Finance">Finance</option><option value="Gaming">Gaming</option>
-            <option value="Technology">Technology</option><option value="Marketing">Marketing</option>
-            <option value="Health">Health</option><option value="Travel">Travel</option>
-            <option value="Food">Food</option><option value="DIY">DIY</option>
-            <option value="Parenting">Parenting</option><option value="Productivity">Productivity</option>
-            <option value="Pets">Pets</option><option value="Fashion">Fashion</option>
-          </select>
-        </div>
-
-        <div id="threads-container"></div>
-      </div>
-
-      <!-- GAMES PANEL -->
-      <div class="panel" id="panel-games">
-        <h2 style="font-weight:300; margin-bottom:1.2rem;">🎮 Games <span style="opacity:0.4;font-size:0.8rem;">(gaming discussions)</span></h2>
-        <p style="color:#7a82a0;">Game-related threads and discussions will appear here.</p>
-      </div>
-
-      <!-- GALLERY PANEL -->
-      <div class="panel" id="panel-gallery">
-        <h2 style="font-weight:300; margin-bottom:1.2rem;">🖼 Gallery</h2>
-        <div class="gallery-grid" id="galleryGrid">
-          <p style="color:#7a82a0; grid-column:1/-1; text-align:center;">Loading images...</p>
-        </div>
-      </div>
-
-      <!-- LIBRARY PANEL -->
-      <div class="panel" id="panel-library">
-        <h2 style="font-weight:300; margin-bottom:1.2rem;">📚 Library <span style="opacity:0.4;font-size:0.8rem;">(Productivity)</span></h2>
-        <div id="libraryContainer">
-          <p style="color:#7a82a0;">Loading productivity threads...</p>
-        </div>
-      </div>
-
-      <!-- MEMBERS PANEL -->
-      <div class="panel" id="panel-members">
-        <div class="members-area" id="membersArea">
-          <div id="memberContent">
-            <h2>🔒 Members Area</h2>
-            <p style="color:#7a82a0; margin-bottom:1rem;">Welcome, <span id="memberEmail"></span>! Post and reply here – only members can see this.</p>
-            <div class="member-create" id="memberCreateThread">
-              <input type="text" id="member-thread-title" placeholder="Thread title..." />
-              <textarea id="member-thread-content" placeholder="Write your post..."></textarea>
-              <select id="member-thread-tag" class="tag-select" required>
-                <option value="">Select a tag...</option>
-                <option value="Finance">Finance</option><option value="Gaming">Gaming</option>
-                <option value="Technology">Technology</option><option value="Marketing">Marketing</option>
-                <option value="Health">Health</option><option value="Travel">Travel</option>
-                <option value="Food">Food</option><option value="DIY">DIY</option>
-                <option value="Parenting">Parenting</option><option value="Productivity">Productivity</option>
-                <option value="Pets">Pets</option><option value="Fashion">Fashion</option>
-              </select>
-              <div class="file-input-wrapper">
-                <input type="file" id="member-image-input" accept="image/*" />
-                <label for="member-image-input"><i class="fas fa-image"></i> Add image</label>
-                <img id="member-image-preview" class="preview" alt="preview" />
-                <span class="filename" id="member-image-filename"></span>
-              </div>
-              <div class="file-input-wrapper">
-                <input type="file" id="member-media-input" accept="video/*,.zip,.rar,.7z,.pdf,.doc,.docx,.txt" />
-                <label for="member-media-input"><i class="fas fa-video"></i> Add video or file</label>
-                <span class="filename" id="member-media-filename"></span>
-              </div>
-              <button class="btn-primary" id="member-create-btn" style="padding:0.4rem 1.2rem; font-size:0.9rem;">Post to Members</button>
-              <span id="member-thread-status" class="status-msg" style="display:none;"></span>
-            </div>
-            <div class="filter-row">
-              <span style="font-size:0.85rem; color:#7a82a0;">Filter:</span>
-              <select id="memberTagFilter">
-                <option value="all">All tags</option>
-                <option value="Finance">Finance</option><option value="Gaming">Gaming</option>
-                <option value="Technology">Technology</option><option value="Marketing">Marketing</option>
-                <option value="Health">Health</option><option value="Travel">Travel</option>
-                <option value="Food">Food</option><option value="DIY">DIY</option>
-                <option value="Parenting">Parenting</option><option value="Productivity">Productivity</option>
-                <option value="Pets">Pets</option><option value="Fashion">Fashion</option>
-              </select>
-            </div>
-            <div id="memberThreadsContainer"><p style="color:#7a82a0; text-align:center; padding:1rem;">Loading member threads...</p></div>
-            <button class="signout-btn" id="signoutBtn"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
-          </div>
-          <div id="memberLoginPrompt" style="display:none; text-align:center; padding:2rem;">
-            <p style="color:#7a82a0;">🔒 Please <a id="memberLoginLink" style="color:#38bdf8; cursor:pointer;">sign in</a> to view and post in the Members Area.</p>
-          </div>
-        </div>
-      </div>
-
+  <div class="header">
+    <h1><i class="fas fa-bolt" style="margin-right:8px;"></i> Pulse</h1>
+    <div class="header-controls">
+      <input type="search" id="searchInput" placeholder="Search posts..." />
+      <select id="sortSelect">
+        <option value="new">Newest</option>
+        <option value="trending">Trending</option>
+        <option value="random">Random</option>
+      </select>
+      <button id="authBtn" class="auth-btn auth-login">
+        <i class="fas fa-sign-in-alt"></i> Login
+      </button>
     </div>
   </div>
 
-  <!-- AUTH MODAL -->
-  <div class="auth-modal" id="authModal">
-    <div class="auth-box">
-      <button class="auth-close" id="authClose">&times;</button>
-      <h2 id="authTitle">Sign In</h2>
-      <p class="sub" id="authSub">Enter your credentials to access members-only content.</p>
-      <div class="auth-error" id="authError"></div>
-      <input type="email" id="authEmail" placeholder="Email" />
-      <input type="password" id="authPassword" placeholder="Password" />
-      <button class="auth-btn" id="authSubmit">Sign In</button>
-      <div class="auth-switch">
-        <span id="authSwitchText">Don't have an account?</span>
-        <a id="authSwitchLink">Sign Up</a>
-      </div>
+  <!-- Stats Dashboard -->
+  <div class="stats-dashboard" id="statsDashboard">
+    <div class="stat-item">
+      <div class="stat-icon"><i class="fas fa-pen-fancy"></i></div>
+      <div class="stat-value" id="statPosts">-</div>
+      <div class="stat-label">Posts</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon"><i class="fas fa-reply"></i></div>
+      <div class="stat-value" id="statReplies">-</div>
+      <div class="stat-label">Replies</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon"><i class="fas fa-crown"></i></div>
+      <div class="stat-value" id="statAdmins">-</div>
+      <div class="stat-label">Admins</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
+      <div class="stat-value" id="statMods">-</div>
+      <div class="stat-label">Mods</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon"><i class="fas fa-robot"></i></div>
+      <div class="stat-value" id="statBots">-</div>
+      <div class="stat-label">Bots</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon"><i class="fas fa-users"></i></div>
+      <div class="stat-value" id="statUsers">-</div>
+      <div class="stat-label">Users</div>
+    </div>
+    <div class="stat-item stat-online">
+      <div class="stat-icon"><i class="fas fa-circle" style="color:#34d399;font-size:0.7rem;"></i></div>
+      <div class="stat-value" id="statOnline">-</div>
+      <div class="stat-label">Online</div>
+    </div>
+    <div class="stat-item stat-visitors">
+      <div class="stat-icon"><i class="fas fa-globe"></i></div>
+      <div class="stat-value" id="statVisitors">-</div>
+      <div class="stat-label">Total Visitors</div>
     </div>
   </div>
 
-  <!-- FULLSCREEN OVERLAY FOR GALLERY -->
-  <div class="fullscreen-overlay" id="fullscreenOverlay">
-    <button class="close-btn" id="fullscreenClose">&times;</button>
-    <img id="fullscreenImage" src="" alt="Fullscreen view" />
-    <div class="caption" id="fullscreenCaption"></div>
-  </div>
-
-  <!-- ADMIN EMBED -->
-  <div id="adminEmbed">
-    <button class="game-toggle" id="gameToggleBtn" aria-label="Support with gaming tip">
-      <span class="controller-emoji">🎮</span>
-      <span class="gamer-tooltip">🎮 Game On! 🎮</span>
-    </button>
-    <div class="tip-panel" id="transparentPanel">
-      <div class="iframe-wrapper">
-        <iframe id='kofiframe' src='https://ko-fi.com/fedjumpergaming/?hidefeed=true&widget=true&embed=true&preview=true' style='border:none; width:100%; background:transparent; display:block;' height='712' title='Ko-fi tip jar - fedjumpergaming' frameborder="0" scrolling="auto" allow="payment" class="ko-fi-iframe" loading="lazy"></iframe>
+  <!-- Support Embed -->
+  <div id="tipButtonContainer">
+    <button id="showWidgetBtn">✨ Support Us ✨</button>
+    <div id="widgetContainer">
+      <div class="header-bar">
+        <span>🌙 DARK MODE • SUPPORT US</span>
+        <button id="closeWidgetBtn">✕</button>
       </div>
+      <iframe 
+        id='kofiframe' 
+        src='https://ko-fi.com/patreonplus/?hidefeed=true&widget=true&embed=true&preview=true' 
+        title='patreonplus'
+        loading="lazy">
+      </iframe>
+      <div class="footer-note">⚡ Your support keeps the content flowing</div>
     </div>
   </div>
 
-  <script>
-    setTimeout(() => { document.body.style.overflow = "auto"; }, 3300);
+  <div class="create-post">
+    <div class="form-row">
+      <input type="text" id="titleInput" placeholder="Post title..." style="flex:1.5;" />
+      <input type="text" id="usernameInput" placeholder="Username (optional)" style="flex:1;" />
+    </div>
+    <textarea id="postInput" placeholder="What's on your mind? Use #hashtags ✨" rows="2"></textarea>
 
-    const SUPABASE_URL = 'https://divcsisxjrbruduyophx.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_PSpZ4GImD-mCAau3F2U6LA_W757gdMM';
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <div class="upload-row" id="uploadRow">
+      <div class="file-upload">
+        <input type="file" id="mediaFileInput" accept="image/*" />
+        <label for="mediaFileInput" class="file-label">
+          <i class="fas fa-upload"></i> <span id="fileLabelText">Choose Image</span>
+        </label>
+        <img id="imagePreview" class="image-preview" alt="Preview" />
+      </div>
+      <label class="blur-check">
+        <input type="checkbox" id="blurToggle" />
+        <i class="fas fa-eye-slash"></i> Blur
+      </label>
+      <span class="upload-hint" id="uploadHint"></span>
+    </div>
 
-    function initAdminEmbed() {
-      const gameButton = document.getElementById('gameToggleBtn');
-      const tipPanel = document.getElementById('transparentPanel');
-      if (!gameButton || !tipPanel) return;
-      let isPanelOpen = false;
-      tipPanel.classList.remove('show');
-      tipPanel.style.display = 'none';
-      gameButton.classList.add('pulse-once');
-      setTimeout(() => { gameButton.classList.remove('pulse-once'); }, 2100);
-      function toggleGamePanel() {
-        if (isPanelOpen) {
-          tipPanel.classList.remove('show');
-          setTimeout(() => { if (!isPanelOpen) { tipPanel.style.display = 'none'; } }, 280);
-          isPanelOpen = false;
-          gameButton.setAttribute('aria-expanded', 'false');
-        } else {
-          tipPanel.style.display = 'block';
-          void tipPanel.offsetHeight;
-          tipPanel.classList.add('show');
-          isPanelOpen = true;
-          gameButton.setAttribute('aria-expanded', 'true');
-        }
-      }
-      gameButton.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleGamePanel(); });
-      gameButton.setAttribute('aria-expanded', 'false');
-      document.addEventListener('click', function(event) {
-        if (isPanelOpen && tipPanel && gameButton) {
-          const insidePanel = tipPanel.contains(event.target);
-          const insideButton = gameButton.contains(event.target);
-          if (!insidePanel && !insideButton) {
-            tipPanel.classList.remove('show');
-            setTimeout(() => {
-              if (tipPanel && !tipPanel.classList.contains('show')) {
-                tipPanel.style.display = 'none';
-                isPanelOpen = false;
-                gameButton.setAttribute('aria-expanded', 'false');
-              }
-            }, 250);
-            isPanelOpen = false;
-          }
-        }
-      });
-      tipPanel.addEventListener('click', (e) => { e.stopPropagation(); });
-      const iframeElem = document.getElementById('kofiframe');
-      if (iframeElem) {
-        iframeElem.style.backgroundColor = 'transparent';
-        iframeElem.style.border = 'none';
-        iframeElem.setAttribute('allow', 'payment; clipboard-write');
-        iframeElem.addEventListener('load', () => { try { iframeElem.style.background = 'transparent'; } catch(e) {} });
-      }
-      gameButton.addEventListener('mousedown', () => { gameButton.style.transform = 'scale(0.96)'; });
-      gameButton.addEventListener('mouseup', () => { gameButton.style.transform = ''; });
-      gameButton.addEventListener('mouseleave', () => { gameButton.style.transform = ''; });
-      gameButton.title = "Click for support panel 🎮";
-      console.log("🎮 Admin embed initialized.");
-    }
+    <div class="form-actions">
+      <div class="left">
+        <span style="font-size:0.8rem;color:#475569;">
+          <i class="fas fa-lock"></i> anon
+        </span>
+      </div>
+      <button id="publishBtn"><i class="fas fa-paper-plane"></i> Publish</button>
+    </div>
+  </div>
 
-    // Fullscreen gallery
-    const fsOverlay = document.getElementById('fullscreenOverlay');
-    const fsImage = document.getElementById('fullscreenImage');
-    const fsCaption = document.getElementById('fullscreenCaption');
-    const fsClose = document.getElementById('fullscreenClose');
+  <div id="feedContainer" class="feed-list"></div>
 
-    function openFullscreen(imgSrc, caption = '') {
-      fsImage.src = imgSrc;
-      fsCaption.textContent = caption;
-      fsOverlay.classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
+  <div class="load-more-container">
+    <button id="loadMoreBtn" class="load-more-btn" style="display:none;">Load More</button>
+    <div id="loadingMore" class="loading-more"><i class="fas fa-spinner fa-spin"></i> Loading more...</div>
+  </div>
+</div>
 
-    function closeFullscreen() {
-      fsOverlay.classList.remove('active');
-      document.body.style.overflow = '';
-    }
+<script>
+  (function() {
+    // ==============================================================
+    // Supabase config
+    // ==============================================================
+    const SUPABASE_URL = "https://bkvvvlaibtbrrkbuxnke.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_ypObXvuLKlTXutfClJfwJQ_rqaG2mRi";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    fsClose.addEventListener('click', closeFullscreen);
-    fsOverlay.addEventListener('click', function(e) {
-      if (e.target === this) closeFullscreen();
-    });
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') closeFullscreen();
-    });
+    // ==============================================================
+    // Intro overlay auto-hide after 1.8s
+    // ==============================================================
+    setTimeout(() => {
+      const overlay = document.getElementById('intro-overlay');
+      if (overlay) overlay.classList.add('hidden');
+    }, 1800);
 
-    let currentUser = null, currentSession = null;
+    // ==============================================================
+    // DOM references
+    // ==============================================================
+    const feed = document.getElementById('feedContainer');
+    const titleInput = document.getElementById('titleInput');
+    const usernameInput = document.getElementById('usernameInput');
+    const postInput = document.getElementById('postInput');
+    const mediaFileInput = document.getElementById('mediaFileInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const blurToggle = document.getElementById('blurToggle');
+    const publishBtn = document.getElementById('publishBtn');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    const loadingMore = document.getElementById('loadingMore');
+    const searchInput = document.getElementById('searchInput');
+    const sortSelect = document.getElementById('sortSelect');
+    const uploadRow = document.getElementById('uploadRow');
+    const fileLabelText = document.getElementById('fileLabelText');
+    const uploadHint = document.getElementById('uploadHint');
 
-    const authModal = document.getElementById('authModal');
-    const authClose = document.getElementById('authClose');
-    const authTitle = document.getElementById('authTitle');
-    const authSub = document.getElementById('authSub');
-    const authEmail = document.getElementById('authEmail');
-    const authPassword = document.getElementById('authPassword');
-    const authSubmit = document.getElementById('authSubmit');
-    const authError = document.getElementById('authError');
+    const statPosts = document.getElementById('statPosts');
+    const statReplies = document.getElementById('statReplies');
+    const statAdmins = document.getElementById('statAdmins');
+    const statMods = document.getElementById('statMods');
+    const statBots = document.getElementById('statBots');
+    const statUsers = document.getElementById('statUsers');
+    const statOnline = document.getElementById('statOnline');
+    const statVisitors = document.getElementById('statVisitors');
+
+    // Auth
+    const authBtn = document.getElementById('authBtn');
+    const loginModal = document.getElementById('loginModal');
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginError = document.getElementById('loginError');
+    const loginSignInBtn = document.getElementById('loginSignInBtn');
+    const loginSignUpBtn = document.getElementById('loginSignUpBtn');
+    const loginModalClose = document.getElementById('loginModalClose');
     const authSwitchLink = document.getElementById('authSwitchLink');
+    const authTitle = document.getElementById('authTitle');
     const authSwitchText = document.getElementById('authSwitchText');
-    const membersTab = document.getElementById('membersTab');
-    const memberEmail = document.getElementById('memberEmail');
-    const signoutBtn = document.getElementById('signoutBtn');
-    const memberContent = document.getElementById('memberContent');
-    const memberLoginPrompt = document.getElementById('memberLoginPrompt');
-    const memberLoginLink = document.getElementById('memberLoginLink');
 
+    // ==============================================================
+    // AUTH STATE
+    // ==============================================================
+    let currentUser = null;
     let isLoginMode = true;
-    const allPanels = ['home', 'games', 'gallery', 'library', 'members'];
-    const panelElements = {
-      home: document.getElementById('panel-home'),
-      games: document.getElementById('panel-games'),
-      gallery: document.getElementById('panel-gallery'),
-      library: document.getElementById('panel-library'),
-      members: document.getElementById('panel-members')
-    };
-    const tabButtons = document.querySelectorAll('.tab-btn:not(#membersTab)');
-    const membersTabBtn = membersTab;
 
-    async function checkAuth() {
-      const { data: { session }, error } = await supabaseClient.auth.getSession();
-      if (error) { console.error('Auth error:', error); return; }
-      if (session) { currentSession = session; currentUser = session.user; updateUIForLoggedIn(); }
-      else { currentUser = null; currentSession = null; updateUIForLoggedOut(); }
-    }
+    // ==============================================================
+    // FILE STATE (moved to top so updateUploadVisibility can use it)
+    // ==============================================================
+    let selectedFile = null;
 
-    function showPanel(panelId) {
-      allPanels.forEach(id => { const panel = panelElements[id]; if (panel) panel.classList.toggle('active', id === panelId); });
-      tabButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === panelId));
-      membersTabBtn.classList.toggle('active', panelId === 'members');
-    }
+    // ==============================================================
+    // Conditional upload visibility (uses selectedFile)
+    // ==============================================================
+    function updateUploadVisibility() {
+      const username = usernameInput.value.trim();
+      const isAdmin = username.toLowerCase() === 'admin';
+      const hasUsername = username.length > 0;
 
-    function updateUIForLoggedIn() {
-      membersTabBtn.textContent = '🔒 Members Area';
-      membersTabBtn.classList.add('logged-in');
-      memberEmail.textContent = currentUser.email;
-      document.getElementById('auth-status').innerHTML = `<i class="fas fa-check-circle" style="color:#2dd4bf;"></i> ${currentUser.email}`;
-      memberContent.style.display = 'block';
-      memberLoginPrompt.style.display = 'none';
-      loadMemberThreads();
-      showPanel('members');
-    }
-
-    function updateUIForLoggedOut() {
-      membersTabBtn.textContent = '🔒 Members-Only';
-      membersTabBtn.classList.remove('logged-in');
-      document.getElementById('auth-status').innerHTML = `<i class="fas fa-user-secret"></i> Anonymous`;
-      memberContent.style.display = 'none';
-      memberLoginPrompt.style.display = 'block';
-      showPanel('home');
-    }
-
-    async function signIn(email, password) {
-      authSubmit.disabled = true; authError.textContent = '';
-      try {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        currentUser = data.user; currentSession = data.session;
-        updateUIForLoggedIn(); closeAuthModal();
-        alert('✅ Signed in successfully!');
-      } catch (err) { authError.textContent = '❌ ' + err.message; }
-      finally { authSubmit.disabled = false; }
-    }
-
-    async function signUp(email, password) {
-      authSubmit.disabled = true; authError.textContent = '';
-      try {
-        const { data, error } = await supabaseClient.auth.signUp({ email, password });
-        if (error) throw error;
-        if (data.user) {
-          alert('✅ Sign-up successful! Please check your email to confirm your account (or sign in if confirmations are disabled).');
-          isLoginMode = true; updateAuthForm();
+      if (hasUsername) {
+        uploadRow.classList.add('visible');
+        if (isAdmin) {
+          mediaFileInput.removeAttribute('accept');
+          fileLabelText.textContent = 'Upload Any File (Image/Video/Archive...)';
+          uploadHint.textContent = 'Admin: all file types allowed';
+        } else {
+          mediaFileInput.accept = 'image/*';
+          fileLabelText.textContent = 'Choose Image';
+          uploadHint.textContent = 'Images only';
         }
-      } catch (err) { authError.textContent = '❌ ' + err.message; }
-      finally { authSubmit.disabled = false; }
+      } else {
+        uploadRow.classList.remove('visible');
+        mediaFileInput.value = '';
+        selectedFile = null;
+        imagePreview.style.display = 'none';
+        uploadHint.textContent = '';
+      }
     }
 
-    async function signOut() {
-      const { error } = await supabaseClient.auth.signOut();
-      if (error) { alert('❌ Error signing out: ' + error.message); return; }
-      currentUser = null; currentSession = null;
-      updateUIForLoggedOut();
-      alert('✅ Signed out.');
+    usernameInput.addEventListener('input', updateUploadVisibility);
+    updateUploadVisibility();
+
+    mediaFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        selectedFile = file;
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            imagePreview.src = ev.target.result;
+            imagePreview.style.display = 'block';
+          };
+          reader.readAsDataURL(file);
+        } else {
+          imagePreview.style.display = 'none';
+          fileLabelText.textContent = file.name;
+        }
+      } else {
+        selectedFile = null;
+        imagePreview.style.display = 'none';
+      }
+    });
+
+    // ==============================================================
+    // Auth functions (unchanged)
+    // ==============================================================
+    function updateAuthUI(user) {
+      currentUser = user;
+      if (user) {
+        const email = user.email || 'User';
+        const initials = email.split('@')[0].substring(0,2).toUpperCase();
+        authBtn.innerHTML = `
+          <div class="avatar-small">${initials}</div>
+          <span class="email-text">${email}</span>
+          <i class="fas fa-sign-out-alt" style="font-size:0.8rem;"></i>
+        `;
+        authBtn.className = 'auth-btn';
+        authBtn.onclick = handleLogout;
+        if (!usernameInput.value.trim()) {
+          usernameInput.value = email.split('@')[0];
+        }
+      } else {
+        authBtn.innerHTML = `<i class="fas fa-sign-in-alt"></i> Login`;
+        authBtn.className = 'auth-btn auth-login';
+        authBtn.onclick = openLoginModal;
+      }
     }
 
-    function openAuthModal() {
-      authModal.classList.add('active');
-      authError.textContent = '';
-      authEmail.value = ''; authPassword.value = '';
-      isLoginMode = true; updateAuthForm();
-      authEmail.focus();
+    function openLoginModal() {
+      loginEmail.value = '';
+      loginPassword.value = '';
+      loginError.style.display = 'none';
+      loginModal.classList.add('open');
+      loginEmail.focus();
+      isLoginMode = true;
+      updateAuthForm();
     }
-    function closeAuthModal() { authModal.classList.remove('active'); }
+
+    function closeLoginModal() {
+      loginModal.classList.remove('open');
+    }
 
     function updateAuthForm() {
       if (isLoginMode) {
-        authTitle.textContent = 'Sign In';
-        authSub.textContent = 'Enter your credentials to access members-only content.';
-        authSubmit.textContent = 'Sign In';
-        authSwitchText.textContent = "Don't have an account?";
-        authSwitchLink.textContent = 'Sign Up';
+        authTitle.textContent = 'Welcome Back';
+        loginSignInBtn.textContent = 'Sign In';
+        authSwitchText.innerHTML = `Don't have an account? <a id="authSwitchLink" style="color:#a78bfa;cursor:pointer;">Sign Up</a>`;
+        document.getElementById('authSwitchLink').addEventListener('click', function(e) {
+          e.preventDefault();
+          isLoginMode = false;
+          updateAuthForm();
+        });
       } else {
-        authTitle.textContent = 'Sign Up';
-        authSub.textContent = 'Create an account to access members-only content.';
-        authSubmit.textContent = 'Sign Up';
-        authSwitchText.textContent = 'Already have an account?';
-        authSwitchLink.textContent = 'Sign In';
+        authTitle.textContent = 'Create Account';
+        loginSignInBtn.textContent = 'Sign Up';
+        authSwitchText.innerHTML = `Already have an account? <a id="authSwitchLink" style="color:#a78bfa;cursor:pointer;">Sign In</a>`;
+        document.getElementById('authSwitchLink').addEventListener('click', function(e) {
+          e.preventDefault();
+          isLoginMode = true;
+          updateAuthForm();
+        });
       }
-      authError.textContent = '';
+      loginError.style.display = 'none';
     }
 
-    authSwitchLink.addEventListener('click', () => { isLoginMode = !isLoginMode; updateAuthForm(); });
-    authClose.addEventListener('click', closeAuthModal);
-    authModal.addEventListener('click', (e) => { if (e.target === authModal) closeAuthModal(); });
-    authSubmit.addEventListener('click', async () => {
-      const email = authEmail.value.trim();
-      const password = authPassword.value.trim();
-      if (!email || !password) { authError.textContent = '❌ Please fill in all fields.'; return; }
-      if (password.length < 6) { authError.textContent = '❌ Password must be at least 6 characters.'; return; }
-      if (isLoginMode) await signIn(email, password);
-      else await signUp(email, password);
+    async function handleAuth() {
+      const email = loginEmail.value.trim();
+      const password = loginPassword.value.trim();
+      if (!email || !password) {
+        loginError.textContent = 'Please fill in both fields.';
+        loginError.style.display = 'block';
+        return;
+      }
+      loginError.style.display = 'none';
+      loginSignInBtn.disabled = true;
+      loginSignInBtn.textContent = isLoginMode ? 'Signing in...' : 'Signing up...';
+
+      try {
+        let result;
+        if (isLoginMode) {
+          result = await supabase.auth.signInWithPassword({ email, password });
+        } else {
+          result = await supabase.auth.signUp({ email, password });
+        }
+        if (result.error) throw result.error;
+        const user = result.data.user;
+        if (user) {
+          closeLoginModal();
+          updateAuthUI(user);
+          fetchStats();
+        } else {
+          loginError.textContent = isLoginMode ? 'No user found.' : 'Sign-up successful! Please check your email to confirm.';
+          loginError.style.display = 'block';
+        }
+      } catch (err) {
+        loginError.textContent = err.message;
+        loginError.style.display = 'block';
+      } finally {
+        loginSignInBtn.disabled = false;
+        loginSignInBtn.textContent = isLoginMode ? 'Sign In' : 'Sign Up';
+      }
+    }
+
+    loginSignInBtn.addEventListener('click', handleAuth);
+    loginPassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleAuth(); });
+    loginEmail.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginPassword.focus(); });
+    loginModalClose.addEventListener('click', closeLoginModal);
+    loginModal.addEventListener('click', (e) => { if (e.target === loginModal) closeLoginModal(); });
+
+    async function handleLogout() {
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        updateAuthUI(null);
+        if (usernameInput.value === currentUser?.email?.split('@')[0]) {
+          usernameInput.value = '';
+        }
+        window.location.reload();
+      } catch (err) {
+        console.error('Logout error:', err);
+        alert('Logout failed: ' + err.message);
+      }
+    }
+
+    async function checkAuth() {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if (session?.user) {
+          updateAuthUI(session.user);
+        } else {
+          updateAuthUI(null);
+        }
+      } catch (err) {
+        console.error('Auth check error:', err);
+        updateAuthUI(null);
+      }
+    }
+
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        updateAuthUI(session.user);
+        fetchStats();
+      } else {
+        updateAuthUI(null);
+      }
     });
-    authPassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') authSubmit.click(); });
-    authEmail.addEventListener('keydown', (e) => { if (e.key === 'Enter') authPassword.focus(); });
-    memberLoginLink.addEventListener('click', openAuthModal);
 
-    tabButtons.forEach(btn => {
-      btn.addEventListener('click', function() {
-        const tab = this.dataset.tab;
-        showPanel(tab);
-        membersTabBtn.classList.remove('active');
-        if (tab === 'gallery') loadGallery();
-        if (tab === 'library') loadLibrary();
-      });
-    });
-
-    membersTabBtn.addEventListener('click', () => {
-      if (currentUser) { showPanel('members'); loadMemberThreads(); }
-      else { openAuthModal(); }
-    });
-
-    signoutBtn.addEventListener('click', signOut);
-
-    function getSessionId() {
-      let id = localStorage.getItem('forum_session_id');
+    // ==============================================================
+    // Visitor tracking & stats (unchanged)
+    // ==============================================================
+    function getVisitorId() {
+      let id = localStorage.getItem('pulse_visitor');
       if (!id) {
-        id = crypto.randomUUID ? crypto.randomUUID() : 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-        localStorage.setItem('forum_session_id', id);
+        id = crypto.randomUUID ? crypto.randomUUID() : 'visitor_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        localStorage.setItem('pulse_visitor', id);
       }
       return id;
     }
 
-    async function updateActiveSession() {
-      const sessionId = getSessionId();
-      const { error } = await supabaseClient.from('active_sessions').upsert({ session_id: sessionId, last_active: new Date().toISOString() }, { onConflict: 'session_id' });
-      if (error) console.error('Active session error:', error);
-    }
-
-    async function updateStats() {
-      if (!sessionStorage.getItem('visit_counted')) {
-        const { data, error } = await supabaseClient.rpc('increment_total_visits');
-        if (!error && data) {
-          document.getElementById('stat-total').textContent = data;
-          document.getElementById('visitorCount').textContent = data;
-        }
-        sessionStorage.setItem('visit_counted', 'true');
-      } else {
-        const { data, error } = await supabaseClient.from('site_stats').select('total_visits').eq('id', 1).single();
-        if (!error && data) {
-          document.getElementById('stat-total').textContent = data.total_visits;
-          document.getElementById('visitorCount').textContent = data.total_visits;
-        }
-      }
-      const thirtySecondsAgo = new Date(Date.now() - 30000).toISOString();
-      const { count, error: countError } = await supabaseClient.from('active_sessions').select('*', { count: 'exact', head: true }).gt('last_active', thirtySecondsAgo);
-      if (!countError) { document.getElementById('stat-online').textContent = count || 0; }
-    }
-
-    let heartbeatInterval = null;
-    function startHeartbeat() {
-      updateActiveSession();
-      heartbeatInterval = setInterval(() => { updateActiveSession(); updateStats(); }, 15000);
-    }
-
-    function sanitizeInput(text) {
-      if (!text) return '';
-      const temp = document.createElement('div');
-      temp.textContent = text;
-      return temp.innerHTML;
-    }
-
-    async function sha256(message) {
-      const msgBuffer = new TextEncoder().encode(message);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    function saveName(name) {
-      if (name && name.trim()) localStorage.setItem('forum_username', name.trim());
-    }
-    function loadName() { return localStorage.getItem('forum_username') || ''; }
-    function getUserName() { const stored = loadName(); return stored || 'Anonymous'; }
-    document.getElementById('author-name').addEventListener('input', function() { saveName(this.value); });
-    document.getElementById('author-name').addEventListener('blur', function() { saveName(this.value); });
-    document.getElementById('author-name').value = loadName();
-
-    function getAvatar(name) {
-      const initial = name && name.trim() ? name.charAt(0).toUpperCase() : '?';
-      return `https://ui-avatars.com/api/?name=${encodeURIComponent(initial)}&background=1e2648&color=38bdf8&size=64&bold=true`;
-    }
-
-    function playPopSound() {
+    async function trackVisitor() {
+      const visitorId = getVisitorId();
       try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscillator.frequency.value = 800;
-        gainNode.gain.value = 0.08;
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.05);
-      } catch(e) { /* ignore */ }
+        const { error } = await supabase
+          .from('visitors')
+          .upsert(
+            { visitor_id: visitorId, last_seen: new Date().toISOString() },
+            { onConflict: 'visitor_id' }
+          );
+        if (error) console.error('Visitor tracking error:', error);
+      } catch (e) { console.error('Visitor tracking error:', e); }
     }
 
-    function triggerHaptics() { if (navigator.vibrate) navigator.vibrate(10); }
+    async function fetchStats() {
+      try {
+        const { count: postsCount, error: err1 } = await supabase
+          .from('posts')
+          .select('*', { count: 'exact', head: true });
+        if (err1) throw err1;
 
-    function setStatus(element, message, type = 'sending') {
-      if (!element) return;
-      element.textContent = message;
-      element.className = `status-msg ${type}`;
-      element.style.display = 'inline-block';
-      if (type === 'sent' || type === 'error') {
-        setTimeout(() => { element.style.display = 'none'; }, 3000);
+        const { count: repliesCount, error: err2 } = await supabase
+          .from('comments')
+          .select('*', { count: 'exact', head: true });
+        if (err2) throw err2;
+
+        const { data: usernames, error: err3 } = await supabase
+          .from('posts')
+          .select('username');
+        if (err3) throw err3;
+
+        const adminSet = new Set();
+        const modSet = new Set();
+        const botSet = new Set();
+        usernames.forEach(row => {
+          if (row.username) {
+            const u = row.username.trim();
+            const lower = u.toLowerCase();
+            if (lower.includes('admin')) adminSet.add(u);
+            if (lower.includes('mod')) modSet.add(u);
+            if (lower.includes('bot')) botSet.add(u);
+          }
+        });
+
+        const { data: emails, error: err4 } = await supabase
+          .from('posts')
+          .select('user_email');
+        if (err4) throw err4;
+        const distinctEmails = new Set();
+        emails.forEach(row => { if (row.user_email) distinctEmails.add(row.user_email); });
+
+        const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+        const { count: onlineCount, error: err5 } = await supabase
+          .from('visitors')
+          .select('*', { count: 'exact', head: true })
+          .gte('last_seen', fiveMinAgo);
+        if (err5) throw err5;
+
+        const { data: visitorData, error: err6 } = await supabase
+          .from('visitors')
+          .select('visitor_id');
+        if (err6) throw err6;
+        const totalVisitors = new Set(visitorData.map(row => row.visitor_id)).size;
+
+        statPosts.textContent = postsCount || 0;
+        statReplies.textContent = repliesCount || 0;
+        statAdmins.textContent = adminSet.size || 0;
+        statMods.textContent = modSet.size || 0;
+        statBots.textContent = botSet.size || 0;
+        statUsers.textContent = distinctEmails.size || 0;
+        statOnline.textContent = onlineCount || 0;
+        statVisitors.textContent = totalVisitors || 0;
+
+      } catch (err) {
+        console.error('Stats fetch error:', err);
+        statPosts.textContent = '?';
+        statReplies.textContent = '?';
+        statAdmins.textContent = '?';
+        statMods.textContent = '?';
+        statBots.textContent = '?';
+        statUsers.textContent = '?';
+        statOnline.textContent = '?';
+        statVisitors.textContent = '?';
       }
     }
 
-    function getUserDisplay(name) {
-      const trimmed = name ? name.trim() : '';
-      if (!trimmed) { return { displayName: 'Unverified', role: 'unverified', badge: '<span class="unverified-badge">Unverified</span>' }; }
-      const lower = trimmed.toLowerCase();
-      if (lower === 'admin') { return { displayName: trimmed, role: 'admin', badge: '<span class="admin-badge">Admin</span>' }; }
-      if (lower === 'mod') { return { displayName: trimmed, role: 'mod', badge: '<span class="mod-badge">Mod</span>' }; }
-      return { displayName: trimmed, role: 'user', badge: '' };
+    // ==============================================================
+    // Helpers (unchanged)
+    // ==============================================================
+    function timeAgo(date) {
+      const diff = (new Date() - new Date(date)) / 60000;
+      if (diff < 1) return 'just now';
+      if (diff < 60) return Math.floor(diff) + 'm ago';
+      const hrs = Math.floor(diff / 60);
+      if (hrs < 24) return hrs + 'h ago';
+      const days = Math.floor(hrs / 24);
+      if (days < 7) return days + 'd ago';
+      return new Date(date).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    }
+    function getInitials(name) {
+      if (!name) return '?';
+      const parts = name.split(/[._-]/);
+      if (parts.length === 1) return parts[0].substring(0,2).toUpperCase();
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    function getColor(name) {
+      if (!name) return '#4f46e5';
+      let h = 0;
+      for (let i=0; i<name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+      return 'hsl(' + (Math.abs(h % 360)) + ',70%,55%)';
+    }
+    function escapeHTML(text) {
+      if (!text) return '';
+      const d = document.createElement('div');
+      d.textContent = text;
+      return d.innerHTML;
+    }
+    function extractHashtags(text) {
+      const m = text.match(/#[\w]+/g);
+      return m ? m.map(t => t.slice(1)) : [];
     }
 
-    // ============================================================
-    // GALLERY – load all images from public threads
-    // ============================================================
-    async function loadGallery() {
-      const container = document.getElementById('galleryGrid');
-      container.innerHTML = `<p style="color:#7a82a0; grid-column:1/-1; text-align:center;">Loading images...</p>`;
+    function getPostTint(post, allPosts) {
+      const username = post.username || '';
+      const blurred = post.blurred || false;
 
-      const { data: threads, error } = await supabaseClient
-        .from('threads')
-        .select('image_url, id, title')
-        .not('image_url', 'is', null)
-        .order('created_at', { ascending: false });
+      if (username.toLowerCase().includes('admin')) return { tint: 'admin', badge: 'Admin', emoji: '👑' };
+      if (username.toLowerCase().includes('mod')) return { tint: 'mod', badge: 'Mod', emoji: '🛡️' };
+      if (username.toLowerCase().includes('bot')) return { tint: 'bot', badge: 'Bot', emoji: '🤖' };
+      if (blurred && post.image_url) return { tint: 'blurred', badge: 'Blurred', emoji: '🌫️' };
+      if (!username || username.trim() === '') return { tint: 'nouser', badge: 'Anonymous', emoji: '👤' };
 
+      const count = allPosts.filter(p => (p.username || '').toLowerCase() === username.toLowerCase()).length;
+      if (count > 1) return { tint: 'repeat', badge: 'Regular', emoji: '💜' };
+      return { tint: 'first', badge: 'First Time', emoji: '💙' };
+    }
+
+    function requestNotify() {
+      if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+    }
+    function notifyNew(content) {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('New post!', { body: content.slice(0,60)+'…' });
+      }
+    }
+    function fireConfetti() {
+      const canvas = document.createElement('canvas');
+      canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99999;';
+      document.body.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const particles = [];
+      const colors = ['#f472b6','#a78bfa','#34d399','#fbbf24','#ef4444','#3b82f6'];
+      for (let i=0; i<80; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          vx: (Math.random() - 0.5) * 6,
+          vy: Math.random() * 4 + 2,
+          size: Math.random() * 6 + 2,
+          color: colors[Math.floor(Math.random() * colors.length)],
+        });
+      }
+      let frame;
+      (function anim() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let alive = false;
+        for (let p of particles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.1;
+          if (p.y < canvas.height + 50) alive = true;
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+        }
+        if (alive) requestAnimationFrame(anim);
+        else canvas.remove();
+      })();
+    }
+
+    async function uploadFile(file) {
+      if (!file) return null;
+      const fileName = `post_${Date.now()}_${file.name}`;
+      const { data, error } = await supabase.storage
+        .from('post-images')
+        .upload(fileName, file);
       if (error) {
-        container.innerHTML = `<p style="color:#f43f5e; grid-column:1/-1;">❌ Error: ${error.message}</p>`;
-        return;
+        console.error('Upload error:', error);
+        return null;
       }
-
-      if (!threads || threads.length === 0) {
-        container.innerHTML = `<p style="color:#7a82a0; grid-column:1/-1; text-align:center;">No images found.</p>`;
-        return;
-      }
-
-      let html = '';
-      threads.forEach(t => {
-        const caption = t.title ? `Image from: ${sanitizeInput(t.title)}` : '';
-        html += `
-          <div class="gallery-item" onclick="openFullscreen('${t.image_url}', '${sanitizeInput(caption)}')">
-            <img src="${t.image_url}" alt="${sanitizeInput(t.title || 'Image')}" loading="lazy" />
-          </div>
-        `;
-      });
-      container.innerHTML = html;
+      const { data: urlData } = supabase.storage
+        .from('post-images')
+        .getPublicUrl(fileName);
+      return urlData.publicUrl;
     }
 
-    // ============================================================
-    // LIBRARY – load threads with tag "Productivity"
-    // ============================================================
-    async function loadLibrary() {
-      const container = document.getElementById('libraryContainer');
-      container.innerHTML = `<p style="color:#7a82a0;">Loading productivity threads...</p>`;
+    // ==============================================================
+    // Comments & Feed (all functions unchanged)
+    // ==============================================================
+    let posts = [];
+    let lastId = null;
+    let hasMore = true;
+    const PAGE_SIZE = 20;
+    let isSubmitting = false;
+    let searchTerm = '';
+    let currentSort = 'new';
+    const commentsMap = new Map();
+    const openComments = new Set();
 
-      const { data: threads, error } = await supabaseClient
-        .from('threads')
-        .select('id, title, content, author_name, created_at, tag')
-        .eq('tag', 'Productivity')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        container.innerHTML = `<p style="color:#f43f5e;">❌ Error: ${error.message}</p>`;
-        return;
-      }
-
-      if (!threads || threads.length === 0) {
-        container.innerHTML = `<p style="color:#7a82a0;">No productivity threads yet. Start one in Home!</p>`;
-        return;
-      }
-
-      let html = '';
-      threads.forEach(t => {
-        const safeTitle = sanitizeInput(t.title);
-        const safeContent = sanitizeInput(t.content || '').substring(0, 150);
-        const author = sanitizeInput(t.author_name || 'Anonymous');
-        const date = new Date(t.created_at).toLocaleString();
-        html += `
-          <div class="library-item" style="background:rgba(255,255,255,0.02); border-radius:12px; padding:0.8rem 1.2rem; margin-bottom:0.8rem; border-left:3px solid #2dd4bf;">
-            <h3 style="font-size:1rem; margin-bottom:0.2rem; color:#e4e6eb;">${safeTitle}</h3>
-            <div style="font-size:0.85rem; color:#b0b8c8; line-height:1.4;">${safeContent}${t.content && t.content.length > 150 ? '...' : ''}</div>
-            <div style="font-size:0.7rem; color:#7a82a0; margin-top:0.3rem;">By ${author} · ${date}</div>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
+    async function fetchComments(postIds) {
+      if (!postIds?.length) return;
+      const { data, error } = await supabase
+        .from('comments')
+        .select('*')
+        .in('post_id', postIds)
+        .order('created_at', { ascending: true });
+      if (error) { console.error(error); return; }
+      const grouped = {};
+      data.forEach(c => { if (!grouped[c.post_id]) grouped[c.post_id] = []; grouped[c.post_id].push(c); });
+      postIds.forEach(id => commentsMap.set(id, grouped[id] || []));
     }
 
-    // ============================================================
-    // UPLOAD FUNCTIONS (image and media)
-    // ============================================================
-    async function uploadFile(file, folder = 'media') {
-      const fileName = `${Date.now()}_${file.name}`;
-      const filePath = `${folder}/${fileName}`;
-      const { data, error } = await supabaseClient.storage.from('images').upload(filePath, file);
-      if (error) { console.error('Upload error:', error); return null; }
-      const { data: publicUrlData } = supabaseClient.storage.from('images').getPublicUrl(filePath);
-      return publicUrlData.publicUrl;
-    }
-
-    // ============================================================
-    // PUBLIC THREADS (Home)
-    // ============================================================
-    async function loadThreads() {
-      const container = document.getElementById('threads-container');
-      container.innerHTML = `<div class="threads-loading"><i class="fas fa-spinner fa-pulse"></i><span>Loading threads...</span></div>`;
-      const tagFilter = document.getElementById('publicTagFilter').value;
-      let query = supabaseClient.from('threads').select('*').order('created_at', { ascending: false });
-      if (tagFilter !== 'all') query = query.eq('tag', tagFilter);
-      const { data: threads, error } = await query;
-      if (error) {
-        container.innerHTML = `<div class="thread-card" style="border-color:#f43f5e;"><p>❌ Error: ${error.message}</p></div>`;
+    function renderPosts(postData, append = false) {
+      if (!postData?.length) {
+        if (!append) feed.innerHTML = '<div class="empty-state"><i class="fas fa-feather-pointed"></i><p>No posts yet. Be the first to shine! ✨</p></div>';
         return;
       }
-      document.getElementById('stat-threads').textContent = threads ? threads.length : 0;
-      let totalReplies = 0;
-      if (threads && threads.length > 0) {
-        const threadIds = threads.map(t => t.id);
-        const { count } = await supabaseClient.from('posts').select('*', { count: 'exact', head: true }).in('thread_id', threadIds);
-        if (count !== null) totalReplies = count;
-      }
-      document.getElementById('stat-replies').textContent = totalReplies;
-      if (!threads || threads.length === 0) {
-        container.innerHTML = `<div class="thread-card"><p class="text-muted">No threads with this tag. Start one above!</p></div>`;
-        return;
-      }
-
-      const userName = getUserName();
-      const sessionId = getSessionId();
       let html = '';
-      let hasAdminPost = false;
-      for (const t of threads) {
-        if (t.author_name && t.author_name.toLowerCase() === 'admin') hasAdminPost = true;
-        const { count: likeCount } = await supabaseClient.from('likes').select('*', { count: 'exact', head: true }).eq('thread_id', t.id);
-        const { count: userLikeCount } = await supabaseClient.from('likes').select('*', { count: 'exact', head: true }).eq('thread_id', t.id).eq('user_name', userName);
-        const userLike = userLikeCount > 0;
-        const { count: replyCount } = await supabaseClient.from('posts').select('*', { count: 'exact', head: true }).eq('thread_id', t.id);
-        const safeTitle = sanitizeInput(t.title);
-        const safeContent = sanitizeInput(t.content || '');
-        const rawAuthor = t.author_name || '';
-        const userInfo = getUserDisplay(rawAuthor);
-        const displayName = userInfo.displayName;
-        const roleClass = userInfo.role === 'admin' ? 'admin-post' : userInfo.role === 'mod' ? 'mod-post' : userInfo.role === 'unverified' ? 'unverified-post' : '';
-        const badgeHtml = userInfo.badge;
+      const now = Date.now();
+      const allPostsForTint = posts;
+      postData.forEach(post => {
+        const username = post.username || '';
+        const displayName = username || 'Anonymous';
+        const initials = getInitials(displayName);
+        const color = getColor(displayName);
+        const likeCount = post.likes_count || 0;
+        const bookmarksCount = post.bookmarks_count || 0;
+        const tags = post.tags || [];
+        const isNew = (now - new Date(post.created_at).getTime()) < 3600000;
+        const commentCount = commentsMap.get(post.id)?.length || 0;
+        const isOpen = openComments.has(post.id);
+        const title = post.title || '';
+
+        const tintInfo = getPostTint(post, allPostsForTint);
+        const tintClass = 'tint-' + tintInfo.tint;
+
+        let content = DOMPurify.sanitize(post.content || '', { ALLOWED_TAGS: ['b','i','u','a','br','p','em','strong'] });
+        content = content.replace(/#(\w+)/g, '<span class="hashtag">#$1</span>');
+
         let mediaHtml = '';
-        const mediaType = t.media_type || 'image';
-        const mediaUrl = t.image_url;
-        if (mediaUrl) {
-          if (mediaType === 'video') {
-            mediaHtml = `<div class="media-wrapper"><video controls src="${mediaUrl}" style="max-height:400px; width:100%; border-radius:12px; background:#000;"></video></div>`;
-          } else if (mediaType === 'file') {
-            const fileName = mediaUrl.split('/').pop();
-            mediaHtml = `<div class="media-wrapper"><a href="${mediaUrl}" target="_blank" download class="file-download"><i class="fas fa-download"></i> ${fileName}</a></div>`;
+        if (post.image_url) {
+          const url = post.image_url;
+          const ext = url.split('.').pop().toLowerCase();
+          const isVideo = ['mp4','webm','ogv','mov','avi','mkv','m4v','wmv','flv'].includes(ext);
+          const isAudio = ['mp3','wav','ogg','aac','flac'].includes(ext);
+          const blurClass = post.blurred ? 'blurred' : '';
+          if (isVideo) {
+            mediaHtml = `
+              <div class="post-image-wrapper ${blurClass}" id="mediaWrapper-${post.id}">
+                <video controls src="${escapeHTML(url)}" onerror="this.style.display='none'"></video>
+                ${post.blurred ? `<div class="blur-badge"><i class="fas fa-eye-slash"></i> Blurred</div>` : ''}
+              </div>
+            `;
+          } else if (isAudio) {
+            mediaHtml = `
+              <div class="post-image-wrapper" id="mediaWrapper-${post.id}">
+                <audio controls src="${escapeHTML(url)}" style="width:100%;"></audio>
+                ${post.blurred ? `<div class="blur-badge"><i class="fas fa-eye-slash"></i> Blurred</div>` : ''}
+              </div>
+            `;
+          } else if (['pdf','doc','docx','txt','zip','rar','7z'].includes(ext)) {
+            mediaHtml = `
+              <div class="post-image-wrapper" id="mediaWrapper-${post.id}" style="padding:0.5rem;text-align:center;">
+                <a href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer" style="color:#a78bfa;text-decoration:underline;">
+                  <i class="fas fa-file"></i> Download ${ext.toUpperCase()} file
+                </a>
+                ${post.blurred ? `<div class="blur-badge"><i class="fas fa-eye-slash"></i> Blurred</div>` : ''}
+              </div>
+            `;
           } else {
-            const blurredClass = t.blurred ? 'image-blur' : '';
-            const unblurred = localStorage.getItem(`unblurred_${t.id}`) === 'true' ? 'unblurred' : '';
-            const imgClass = `thread-image ${blurredClass} ${unblurred}`.trim();
-            mediaHtml = `<img src="${mediaUrl}" class="${imgClass}" alt="thread image" onclick="toggleBlur('${t.id}', this)" />`;
+            mediaHtml = `
+              <div class="post-image-wrapper ${blurClass}" id="mediaWrapper-${post.id}">
+                <img src="${escapeHTML(url)}" alt="Post media" loading="lazy" onerror="this.style.display='none'" />
+                ${post.blurred ? `<div class="blur-badge"><i class="fas fa-eye-slash"></i> Blurred</div>` : ''}
+              </div>
+            `;
           }
         }
-        let lockHtml = '', passwordVerified = false;
-        if (t.password_hash) {
-          const unlocked = localStorage.getItem(`unlocked_${t.id}`) === 'true';
-          if (!unlocked) {
-            lockHtml = `<div class="lock-overlay"><p><i class="fas fa-lock"></i> This post is password protected.</p><input type="password" id="pwd-input-${t.id}" placeholder="Enter password" /><button onclick="unlockThread('${t.id}')">Unlock</button><span id="pwd-error-${t.id}" style="color:#f43f5e; display:block;"></span></div>`;
-          } else { passwordVerified = true; }
-        }
-        let ageHtml = '', ageVerified = false;
-        if (t.age_required && t.age_required > 0) {
-          const ageOk = localStorage.getItem(`age_verified_${t.id}`) === 'true';
-          if (!ageOk) {
-            ageHtml = `<div class="age-overlay"><p><i class="fas fa-shield-alt"></i> This post requires age ${t.age_required}+.</p><input type="number" id="age-input-${t.id}" placeholder="Enter your age" /><button onclick="verifyAge('${t.id}', ${t.age_required})">Verify</button><span id="age-error-${t.id}" style="color:#f43f5e; display:block;"></span></div>`;
-          } else { ageVerified = true; }
-        }
-        const showContent = (!t.password_hash || passwordVerified) && (!t.age_required || t.age_required === 0 || ageVerified);
-        const lockIcon = t.password_hash ? `<i class="fas fa-lock lock-icon" title="Password protected"></i>` : '';
-        const ageIcon = t.age_required && t.age_required > 0 ? `<i class="fas fa-shield-alt age-icon" title="Age ${t.age_required}+"></i>` : '';
-        const tagBadge = t.tag ? `<span class="tag-badge">${sanitizeInput(t.tag)}</span>` : '';
 
-        html += `<div class="thread-card ${roleClass}" data-thread-id="${t.id}">
-          <div class="author">
-            <img src="${getAvatar(displayName === 'Unverified' ? '' : displayName)}" alt="" />
-            <span class="name">${sanitizeInput(displayName)} ${badgeHtml}</span>
-            ${tagBadge}
-            <span class="time">${new Date(t.created_at).toLocaleString()}</span>
-            ${lockIcon} ${ageIcon}
-          </div>
-          <h2>${safeTitle}</h2>
-          ${showContent ? `<div class="content">${safeContent}</div>${mediaHtml}` : `<div class="content" style="opacity:0.3; filter: blur(4px); pointer-events:none;">${safeContent.substring(0, 100)}...</div>${mediaUrl ? `<div style="filter: blur(20px);">${mediaHtml}</div>` : ''}`}
-          ${!showContent ? lockHtml + ageHtml : ''}
-          <div class="actions">
-            <span class="like-toggle ${userLike ? 'liked' : ''}" data-thread="${t.id}" onclick="toggleLike('${t.id}')">
-              <i class="fas fa-heart"></i> <span class="like-count">${likeCount || 0}</span>
-            </span>
-            <span><i class="fas fa-comment"></i> ${replyCount || 0}</span>
-            <span><i class="fas fa-share"></i> Share</span>
-          </div>
-          <div id="replies-${t.id}" class="replies-container hidden"></div>
-          <button class="show-replies-btn" onclick="viewThread('${t.id}')">
-            <i class="fas fa-chevron-down"></i> Show replies
-          </button>
-        </div>`;
-      }
-      container.innerHTML = html;
-
-      const adminEmbed = document.getElementById('adminEmbed');
-      if (hasAdminPost) {
-        adminEmbed.classList.add('show');
-        if (!window._adminEmbedInitialized) { window._adminEmbedInitialized = true; initAdminEmbed(); }
-      } else {
-        adminEmbed.classList.remove('show');
-      }
-    }
-
-    document.getElementById('publicTagFilter').addEventListener('change', loadThreads);
-
-    // ============================================================
-    // MEMBER THREADS
-    // ============================================================
-    async function loadMemberThreads() {
-      if (!currentUser) return;
-      const container = document.getElementById('memberThreadsContainer');
-      container.innerHTML = `<p style="color:#7a82a0; text-align:center; padding:1rem;">Loading member threads...</p>`;
-      const tagFilter = document.getElementById('memberTagFilter').value;
-      try {
-        let query = supabaseClient.from('member_threads').select('*').order('created_at', { ascending: false });
-        if (tagFilter !== 'all') query = query.eq('tag', tagFilter);
-        const { data: threads, error } = await query;
-        if (error) throw error;
-        if (!threads || threads.length === 0) {
-          container.innerHTML = `<p style="color:#7a82a0; text-align:center; padding:1rem;">No member threads with this tag. Start one above!</p>`;
-          return;
-        }
-        let html = '';
-        let hasAdminPost = false;
-        for (const t of threads) {
-          if (t.author_name && t.author_name.toLowerCase() === 'admin') hasAdminPost = true;
-          const { count: replyCount } = await supabaseClient.from('member_posts').select('*', { count: 'exact', head: true }).eq('thread_id', t.id);
-          const userInfo = getUserDisplay(t.author_name || 'Anonymous');
-          const displayName = userInfo.displayName;
-          const badgeHtml = userInfo.badge;
-          const tagBadge = t.tag ? `<span class="tag-badge">${sanitizeInput(t.tag)}</span>` : '';
-          html += `<div class="member-thread" data-thread-id="${t.id}">
-            <div class="author">
-              <img src="${getAvatar(displayName)}" alt="" />
-              <span class="name">${sanitizeInput(displayName)} ${badgeHtml}</span>
-              ${tagBadge}
-              <span class="time">${new Date(t.created_at).toLocaleString()}</span>
-            </div>
-            <h3>${sanitizeInput(t.title)}</h3>
-            <div class="content">${sanitizeInput(t.content || '')}</div>
-            <div class="actions">
-              <span><i class="fas fa-comment"></i> ${replyCount || 0}</span>
-            </div>
-            <div id="member-replies-${t.id}" class="member-replies"></div>
-            <button class="show-replies-btn" onclick="viewMemberThread('${t.id}')">
-              <i class="fas fa-chevron-down"></i> Show replies
-            </button>
-          </div>`;
-        }
-        container.innerHTML = html;
-        const adminEmbed = document.getElementById('adminEmbed');
-        if (hasAdminPost) {
-          adminEmbed.classList.add('show');
-          if (!window._adminEmbedInitialized) { window._adminEmbedInitialized = true; initAdminEmbed(); }
-        }
-      } catch (e) { container.innerHTML = `<p style="color:#f43f5e;">❌ Error: ${e.message}</p>`; }
-    }
-
-    document.getElementById('memberTagFilter').addEventListener('change', loadMemberThreads);
-
-    // ============================================================
-    // MEMBER REPLY FUNCTIONS
-    // ============================================================
-    window.viewMemberThread = async function(threadId) {
-      const container = document.getElementById(`member-replies-${threadId}`);
-      if (!container) return;
-      if (container.classList.contains('hidden')) {
-        container.classList.remove('hidden');
-        const { data: posts, error } = await supabaseClient.from('member_posts').select('*').eq('thread_id', threadId).order('created_at', { ascending: true });
-        if (error) { container.innerHTML = `<p style="color:#f43f5e;">❌ Error: ${error.message}</p>`; return; }
-        let html = '';
-        if (!posts || posts.length === 0) { html = '<p style="color:#7a82a0; font-size:0.85rem;">No replies yet.</p>'; }
-        else {
-          html = posts.map(p => {
-            const userInfo = getUserDisplay(p.author_name || 'Anonymous');
-            const displayName = userInfo.displayName;
-            return `<div class="member-reply">
-              <div class="author">
-                <img src="${getAvatar(displayName)}" alt="" />
-                <span class="name">${sanitizeInput(displayName)}</span>
-                <span class="time">${new Date(p.created_at).toLocaleString()}</span>
+        html += `
+          <div class="post-card ${tintClass}" data-id="${post.id}" id="post-${post.id}">
+            <div class="post-header">
+              <div class="avatar" style="background:${color};">${initials}</div>
+              <div class="post-user">
+                ${escapeHTML(displayName)}
+                <span>· ${post.user_email || 'anon'}</span>
+                <span class="tint-badge ${tintInfo.tint}">${tintInfo.emoji} ${tintInfo.badge}</span>
+                ${isNew ? '<span class="badge-new">New</span>' : ''}
               </div>
-              <div class="content">${sanitizeInput(p.content)}</div>
-            </div>`;
-          }).join('');
-        }
-        html += `<div class="member-reply-form">
-          <textarea id="member-reply-${threadId}" placeholder="Write a reply..." rows="1"></textarea>
-          <button onclick="addMemberReply('${threadId}')"><i class="fas fa-reply"></i> Reply</button>
-        </div>`;
-        container.innerHTML = html;
-        container.classList.remove('hidden');
-      } else { container.classList.add('hidden'); }
-    };
-
-    window.addMemberReply = async function(threadId) {
-      if (!currentUser) { alert('Please sign in to reply.'); return; }
-      const contentInput = document.getElementById(`member-reply-${threadId}`);
-      const content = contentInput.value.trim();
-      if (!content) { alert('Write something.'); return; }
-      const { error } = await supabaseClient.from('member_posts').insert([{ thread_id: parseInt(threadId), author_id: currentUser.id, author_name: currentUser.email, content: content }]);
-      if (error) { alert('❌ Error: ' + error.message); return; }
-      contentInput.value = ''; playPopSound();
-      await viewMemberThread(threadId);
-      loadMemberThreads();
-    };
-
-    document.getElementById('member-create-btn').addEventListener('click', async function() {
-      if (!currentUser) { alert('Please sign in to post.'); return; }
-      const titleInput = document.getElementById('member-thread-title');
-      const contentInput = document.getElementById('member-thread-content');
-      const tagSelect = document.getElementById('member-thread-tag');
-      const statusEl = document.getElementById('member-thread-status');
-      const title = titleInput.value.trim();
-      const content = contentInput.value.trim();
-      const tag = tagSelect.value;
-      if (!title) { alert('Enter a title.'); return; }
-      if (!tag) { alert('Please select a tag.'); return; }
-      this.disabled = true;
-      setStatus(statusEl, 'Sending...', 'sending');
-      const { error } = await supabaseClient.from('member_threads').insert([{ title: title, content: content, author_id: currentUser.id, author_name: currentUser.email, tag: tag }]);
-      if (error) { setStatus(statusEl, 'Failed: ' + error.message, 'error'); this.disabled = false; return; }
-      setStatus(statusEl, 'Sent! ✅', 'sent');
-      titleInput.value = ''; contentInput.value = ''; tagSelect.value = '';
-      loadMemberThreads();
-      this.disabled = false;
-    });
-
-    // ============================================================
-    // PUBLIC REPLY FUNCTIONS
-    // ============================================================
-    window.viewThread = async function(threadId) {
-      const container = document.getElementById(`replies-${threadId}`);
-      if (!container) return;
-      if (container.classList.contains('hidden')) {
-        container.classList.remove('hidden');
-        const { data: posts, error } = await supabaseClient.from('posts').select('*').eq('thread_id', threadId).order('created_at', { ascending: true });
-        if (error) { container.innerHTML = `<p style="color:#f43f5e;">❌ Error: ${error.message}</p>`; return; }
-        let html = '';
-        if (!posts || posts.length === 0) { html = '<p class="text-muted">No replies yet. Be the first!</p>'; }
-        else {
-          html = posts.map(p => {
-            const rawAuthor = p.author_name || '';
-            const userInfo = getUserDisplay(rawAuthor);
-            const displayName = userInfo.displayName;
-            const roleClass = userInfo.role === 'admin' ? 'admin-post' : userInfo.role === 'mod' ? 'mod-post' : userInfo.role === 'unverified' ? 'unverified-post' : '';
-            const badgeHtml = userInfo.badge;
-            const safeContent = sanitizeInput(p.content);
-            let mediaHtml = '';
-            const mediaType = p.media_type || 'image';
-            const mediaUrl = p.image_url;
-            if (mediaUrl) {
-              if (mediaType === 'video') {
-                mediaHtml = `<video controls src="${mediaUrl}" class="reply-video"></video>`;
-              } else if (mediaType === 'file') {
-                const fileName = mediaUrl.split('/').pop();
-                mediaHtml = `<a href="${mediaUrl}" target="_blank" download class="reply-file"><i class="fas fa-download"></i> ${fileName}</a>`;
-              } else {
-                mediaHtml = `<img src="${mediaUrl}" class="reply-image" alt="reply image" />`;
-              }
-            }
-            return `<div class="reply-item ${roleClass}">
-              <div class="author">
-                <img src="${getAvatar(displayName === 'Unverified' ? '' : displayName)}" alt="" />
-                <span class="name">${sanitizeInput(displayName)} ${badgeHtml}</span>
-                <span class="time">${new Date(p.created_at).toLocaleString()}</span>
+              <div class="post-time">${timeAgo(post.created_at)}</div>
+            </div>
+            ${title ? `<div class="post-title">${escapeHTML(title)}</div>` : ''}
+            <div class="post-content">${content}</div>
+            ${tags.length ? `<div class="post-tags">${tags.map(t => `<span class="tag-pill">#${escapeHTML(t)}</span>`).join('')}</div>` : ''}
+            ${mediaHtml}
+            <div class="post-footer">
+              <button class="like-btn" data-id="${post.id}">
+                <i class="fa-regular fa-heart"></i> <span class="like-count">${likeCount}</span>
+              </button>
+              <button class="bookmark-btn" data-id="${post.id}">
+                <i class="fa-regular fa-bookmark"></i> <span class="bookmark-count">${bookmarksCount}</span>
+              </button>
+              ${post.image_url ? `<button class="blur-toggle" data-id="${post.id}" title="Toggle Blur">
+                <i class="fas ${post.blurred ? 'fa-eye' : 'fa-eye-slash'}"></i>
+              </button>` : ''}
+              <button class="comment-toggle" data-id="${post.id}">
+                <i class="fa-regular fa-comment"></i> <span class="comment-count">${commentCount}</span>
+              </button>
+            </div>
+            <div class="comments-section ${isOpen ? 'open' : ''}" id="comments-${post.id}">
+              <div id="commentList-${post.id}">${renderComments(post.id)}</div>
+              <div class="comment-form">
+                <input type="text" placeholder="Write a reply..." id="commentInput-${post.id}" />
+                <button data-post="${post.id}" class="comment-submit">Reply</button>
               </div>
-              <div class="content">${safeContent}</div>
-              ${mediaHtml}
-            </div>`;
-          }).join('');
-        }
-        html += `<div class="reply-form">
-          <input type="text" id="reply-author-${threadId}" placeholder="Your name" />
-          <textarea id="reply-content-${threadId}" placeholder="Write a reply..." rows="2"></textarea>
-          <div class="file-input-wrapper">
-            <input type="file" id="reply-image-${threadId}" accept="image/*" />
-            <label for="reply-image-${threadId}" style="font-size:0.75rem;"><i class="fas fa-image"></i> Add image</label>
-            <img id="reply-image-preview-${threadId}" class="preview" />
-            <span class="filename" id="reply-image-filename-${threadId}"></span>
+            </div>
           </div>
-          <div class="file-input-wrapper">
-            <input type="file" id="reply-media-${threadId}" accept="video/*,.zip,.rar,.7z,.pdf,.doc,.docx,.txt" />
-            <label for="reply-media-${threadId}" style="font-size:0.75rem;"><i class="fas fa-video"></i> Add video/file</label>
-            <span class="filename" id="reply-media-filename-${threadId}"></span>
-          </div>
-          <button onclick="addReply('${threadId}')"><i class="fas fa-reply"></i> Reply</button>
-          <span id="reply-status-${threadId}" class="status-msg" style="display:none;"></span>
-        </div>`;
-        container.innerHTML = html;
-        // Preview handlers for reply image and media
-        const replyImageInput = document.getElementById(`reply-image-${threadId}`);
-        if (replyImageInput) {
-          replyImageInput.addEventListener('change', function(e) {
-            const preview = document.getElementById(`reply-image-preview-${threadId}`);
-            const filenameSpan = document.getElementById(`reply-image-filename-${threadId}`);
-            if (this.files && this.files[0]) {
-              const reader = new FileReader();
-              reader.onload = function(ev) { if (preview) { preview.src = ev.target.result; preview.style.display = 'block'; } };
-              reader.readAsDataURL(this.files[0]);
-              if (filenameSpan) filenameSpan.textContent = this.files[0].name;
-            } else {
-              if (preview) { preview.style.display = 'none'; preview.src = ''; }
-              if (filenameSpan) filenameSpan.textContent = '';
-            }
-          });
-        }
-        const replyMediaInput = document.getElementById(`reply-media-${threadId}`);
-        if (replyMediaInput) {
-          replyMediaInput.addEventListener('change', function(e) {
-            const filenameSpan = document.getElementById(`reply-media-filename-${threadId}`);
-            if (this.files && this.files[0]) {
-              if (filenameSpan) filenameSpan.textContent = this.files[0].name;
-            } else {
-              if (filenameSpan) filenameSpan.textContent = '';
-            }
-          });
-        }
-        setTimeout(() => container.scrollTop = container.scrollHeight, 100);
-      } else { container.classList.add('hidden'); }
-    };
-
-    window.addReply = async function(threadId) {
-      const authorInput = document.getElementById(`reply-author-${threadId}`);
-      const contentInput = document.getElementById(`reply-content-${threadId}`);
-      const imageInput = document.getElementById(`reply-image-${threadId}`);
-      const mediaInput = document.getElementById(`reply-media-${threadId}`);
-      const statusEl = document.getElementById(`reply-status-${threadId}`);
-      const btn = document.querySelector(`#replies-${threadId} .reply-form button`);
-
-      const rawAuthor = authorInput.value.trim();
-      const rawContent = contentInput.value.trim();
-      if (!rawContent) { alert('Write something.'); return; }
-
-      const author = rawAuthor || 'Anonymous';
-      const content = sanitizeInput(rawContent);
-      const sessionId = getSessionId();
-
-      btn.disabled = true;
-      setStatus(statusEl, 'Sending...', 'sending');
-
-      let imageUrl = null;
-      let mediaType = 'image';
-
-      let fileToUpload = null;
-      let fileType = '';
-      if (mediaInput && mediaInput.files && mediaInput.files[0]) {
-        fileToUpload = mediaInput.files[0];
-        const mime = fileToUpload.type;
-        if (mime.startsWith('video/')) {
-          fileType = 'video';
-        } else {
-          fileType = 'file';
-        }
-      } else if (imageInput && imageInput.files && imageInput.files[0]) {
-        fileToUpload = imageInput.files[0];
-        fileType = 'image';
-      }
-
-      if (fileToUpload) {
-        const folder = fileType === 'image' ? 'images' : 'media';
-        imageUrl = await uploadFile(fileToUpload, folder);
-        if (!imageUrl) {
-          setStatus(statusEl, 'File upload failed', 'error');
-          btn.disabled = false;
-          return;
-        }
-        mediaType = fileType;
-      }
-
-      const { error } = await supabaseClient.from('posts').insert([{
-        thread_id: parseInt(threadId),
-        author_name: author,
-        content: content,
-        image_url: imageUrl,
-        session_id: sessionId,
-        media_type: mediaType
-      }]);
-
-      if (error) {
-        setStatus(statusEl, 'Failed: ' + error.message, 'error');
-        btn.disabled = false;
-        return;
-      }
-
-      setStatus(statusEl, 'Sent! ✅', 'sent');
-      authorInput.value = '';
-      contentInput.value = '';
-      if (imageInput) imageInput.value = '';
-      if (mediaInput) mediaInput.value = '';
-      const imagePreview = document.getElementById(`reply-image-preview-${threadId}`);
-      if (imagePreview) { imagePreview.style.display = 'none'; imagePreview.src = ''; }
-      const imageFilename = document.getElementById(`reply-image-filename-${threadId}`);
-      if (imageFilename) imageFilename.textContent = '';
-      const mediaFilename = document.getElementById(`reply-media-filename-${threadId}`);
-      if (mediaFilename) mediaFilename.textContent = '';
-
-      playPopSound();
-      triggerHaptics();
-
-      await viewThread(threadId);
-      loadThreads();
-      btn.disabled = false;
-    };
-
-    document.getElementById('create-thread-btn').addEventListener('click', async function() {
-      const titleInput = document.getElementById('thread-title');
-      const contentInput = document.getElementById('thread-content');
-      const authorInput = document.getElementById('author-name');
-      const tagSelect = document.getElementById('thread-tag');
-      const blurCheck = document.getElementById('thread-blur');
-      const passwordInput = document.getElementById('thread-password');
-      const ageInput = document.getElementById('thread-age');
-      const imageInput = document.getElementById('thread-image-input');
-      const mediaInput = document.getElementById('thread-media-input');
-      const statusEl = document.getElementById('thread-status');
-
-      const rawTitle = titleInput.value.trim();
-      const rawContent = contentInput.value.trim();
-      const rawAuthor = authorInput.value.trim();
-      const tag = tagSelect.value;
-      if (!rawTitle) { alert('Enter a title.'); return; }
-      if (!tag) { alert('Please select a tag.'); return; }
-
-      const title = sanitizeInput(rawTitle);
-      const content = sanitizeInput(rawContent);
-      const author = rawAuthor || 'Anonymous';
-      const blurred = blurCheck.checked;
-      let password_hash = null;
-      const password = passwordInput.value.trim();
-      if (password) { password_hash = await sha256(password); }
-      const age_required = parseInt(ageInput.value) || 0;
-      const sessionId = getSessionId();
-
-      this.disabled = true;
-      setStatus(statusEl, 'Sending...', 'sending');
-
-      let imageUrl = null;
-      let mediaType = 'image';
-      let fileToUpload = null;
-      let fileType = '';
-      if (mediaInput && mediaInput.files && mediaInput.files[0]) {
-        fileToUpload = mediaInput.files[0];
-        const mime = fileToUpload.type;
-        if (mime.startsWith('video/')) {
-          fileType = 'video';
-        } else {
-          fileType = 'file';
-        }
-      } else if (imageInput && imageInput.files && imageInput.files[0]) {
-        fileToUpload = imageInput.files[0];
-        fileType = 'image';
-      }
-
-      if (fileToUpload) {
-        const folder = fileType === 'image' ? 'images' : 'media';
-        imageUrl = await uploadFile(fileToUpload, folder);
-        if (!imageUrl) {
-          setStatus(statusEl, 'File upload failed', 'error');
-          this.disabled = false;
-          return;
-        }
-        mediaType = fileType;
-      }
-
-      const { error } = await supabaseClient.from('threads').insert([{
-        title: title,
-        content: content,
-        author_name: author,
-        tag: tag,
-        blurred: blurred,
-        password_hash: password_hash,
-        age_required: age_required,
-        session_id: sessionId,
-        image_url: imageUrl,
-        media_type: mediaType
-      }]);
-
-      if (error) {
-        setStatus(statusEl, 'Failed: ' + error.message, 'error');
-        this.disabled = false;
-        return;
-      }
-
-      setStatus(statusEl, 'Sent! ✅', 'sent');
-      titleInput.value = '';
-      contentInput.value = '';
-      authorInput.value = '';
-      tagSelect.value = '';
-      blurCheck.checked = false;
-      passwordInput.value = '';
-      ageInput.value = '';
-      if (imageInput) imageInput.value = '';
-      if (mediaInput) mediaInput.value = '';
-      document.getElementById('thread-image-preview').style.display = 'none';
-      document.getElementById('thread-image-preview').src = '';
-      document.getElementById('thread-image-filename').textContent = '';
-      document.getElementById('thread-media-filename').textContent = '';
-      loadThreads();
-      this.disabled = false;
-    });
-
-    // File input preview handlers for thread creation
-    document.getElementById('thread-image-input').addEventListener('change', function(e) {
-      const preview = document.getElementById('thread-image-preview');
-      const filename = document.getElementById('thread-image-filename');
-      if (this.files && this.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(ev) { preview.src = ev.target.result; preview.style.display = 'block'; };
-        reader.readAsDataURL(this.files[0]);
-        filename.textContent = this.files[0].name;
-      } else {
-        preview.style.display = 'none';
-        preview.src = '';
-        filename.textContent = '';
-      }
-    });
-    document.getElementById('thread-media-input').addEventListener('change', function(e) {
-      const filename = document.getElementById('thread-media-filename');
-      if (this.files && this.files[0]) {
-        filename.textContent = this.files[0].name;
-      } else {
-        filename.textContent = '';
-      }
-    });
-
-    // Member thread file inputs
-    document.getElementById('member-image-input').addEventListener('change', function(e) {
-      const preview = document.getElementById('member-image-preview');
-      const filename = document.getElementById('member-image-filename');
-      if (this.files && this.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(ev) { preview.src = ev.target.result; preview.style.display = 'block'; };
-        reader.readAsDataURL(this.files[0]);
-        filename.textContent = this.files[0].name;
-      } else {
-        preview.style.display = 'none';
-        preview.src = '';
-        filename.textContent = '';
-      }
-    });
-    document.getElementById('member-media-input').addEventListener('change', function(e) {
-      const filename = document.getElementById('member-media-filename');
-      if (this.files && this.files[0]) {
-        filename.textContent = this.files[0].name;
-      } else {
-        filename.textContent = '';
-      }
-    });
-
-    window.toggleLike = async function(threadId) {
-      const userName = getUserName();
-      const likeToggle = document.querySelector(`.like-toggle[data-thread="${threadId}"]`);
-      if (!likeToggle) return;
-      const { data: existing } = await supabaseClient.from('likes').select('*').eq('thread_id', parseInt(threadId)).eq('user_name', userName);
-      if (existing && existing.length > 0) {
-        const { error } = await supabaseClient.from('likes').delete().eq('thread_id', parseInt(threadId)).eq('user_name', userName);
-        if (error) { alert('Error: ' + error.message); return; }
-      } else {
-        const { error } = await supabaseClient.from('likes').insert([{ thread_id: parseInt(threadId), user_name: userName }]);
-        if (error) { alert('Error: ' + error.message); return; }
-        triggerHaptics(); playPopSound();
-      }
-      loadThreads();
-    };
-
-    window.toggleBlur = function(threadId, imgElement) {
-      const current = imgElement.classList.contains('unblurred');
-      if (current) { imgElement.classList.remove('unblurred'); localStorage.setItem(`unblurred_${threadId}`, 'false'); }
-      else { imgElement.classList.add('unblurred'); localStorage.setItem(`unblurred_${threadId}`, 'true'); }
-    };
-
-    window.unlockThread = async function(threadId) {
-      const input = document.getElementById(`pwd-input-${threadId}`);
-      const errorSpan = document.getElementById(`pwd-error-${threadId}`);
-      const entered = input.value;
-      if (!entered) { errorSpan.textContent = 'Enter a password.'; return; }
-      const { data, error } = await supabaseClient.from('threads').select('password_hash').eq('id', threadId).single();
-      if (error) { errorSpan.textContent = 'Error fetching password.'; return; }
-      const enteredHash = await sha256(entered);
-      if (enteredHash === data.password_hash) { localStorage.setItem(`unlocked_${threadId}`, 'true'); loadThreads(); }
-      else { errorSpan.textContent = 'Incorrect password.'; }
-    };
-
-    window.verifyAge = function(threadId, requiredAge) {
-      const input = document.getElementById(`age-input-${threadId}`);
-      const errorSpan = document.getElementById(`age-error-${threadId}`);
-      const age = parseInt(input.value);
-      if (isNaN(age) || age < requiredAge) { errorSpan.textContent = `You must be at least ${requiredAge} years old.`; return; }
-      localStorage.setItem(`age_verified_${threadId}`, 'true');
-      loadThreads();
-    };
-
-    async function checkAuthAndInit() {
-      await checkAuth();
-      supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN' && session) { currentUser = session.user; currentSession = session; updateUIForLoggedIn(); }
-        else if (event === 'SIGNED_OUT') { currentUser = null; currentSession = null; updateUIForLoggedOut(); }
+        `;
       });
+
+      if (append) feed.insertAdjacentHTML('beforeend', html);
+      else feed.innerHTML = html;
+
+      feed.querySelectorAll('.like-btn').forEach(b => b.addEventListener('click', handleLike));
+      feed.querySelectorAll('.bookmark-btn').forEach(b => b.addEventListener('click', handleBookmark));
+      feed.querySelectorAll('.blur-toggle').forEach(b => b.addEventListener('click', toggleBlur));
+      feed.querySelectorAll('.comment-toggle').forEach(b => b.addEventListener('click', toggleComments));
+      feed.querySelectorAll('.comment-submit').forEach(b => b.addEventListener('click', handleCommentSubmit));
+      feed.querySelectorAll('.comment-form input').forEach(i => i.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          i.parentElement.querySelector('.comment-submit')?.click();
+        }
+      }));
     }
 
-    async function init() {
+    function renderComments(postId) {
+      const comments = commentsMap.get(postId) || [];
+      if (!comments.length) return '<div style="color:#64748b;font-size:0.85rem;padding:0.25rem 0;">No replies yet.</div>';
+      return comments.map(c => {
+        const name = c.user_email?.split('@')[0] || 'Anonymous';
+        return `
+          <div class="comment-item">
+            <div class="comment-avatar" style="background:${getColor(name)};">${getInitials(name)}</div>
+            <div class="comment-body">
+              <div class="comment-user">${escapeHTML(name)} <span>${timeAgo(c.created_at)}</span></div>
+              <div class="comment-text">${escapeHTML(c.content)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function toggleBlur(e) {
+      const btn = e.currentTarget;
+      const postId = Number(btn.dataset.id);
+      const postIndex = posts.findIndex(p => p.id === postId);
+      if (postIndex === -1) return;
+      const post = posts[postIndex];
+      const newBlur = !post.blurred;
+
+      post.blurred = newBlur;
+      updatePostUI(postId, newBlur);
+
       try {
-        await loadThreads();
-        await checkAuthAndInit();
-        await updateStats();
-        startHeartbeat();
-      } catch (e) {
-        console.error('Init error:', e);
+        const { error } = await supabase
+          .from('posts')
+          .update({ blurred: newBlur })
+          .eq('id', postId);
+        if (error) throw error;
+      } catch (err) {
+        console.error('Toggle blur error:', err);
+        post.blurred = !newBlur;
+        updatePostUI(postId, !newBlur);
+        alert('Failed to toggle blur. Please try again.');
       }
     }
 
-    setTimeout(init, 100);
-  </script>
+    function updatePostUI(postId, blurred) {
+      const postCard = document.getElementById(`post-${postId}`);
+      if (!postCard) return;
+      const wrapper = document.getElementById(`mediaWrapper-${postId}`);
+      if (wrapper) {
+        wrapper.classList.toggle('blurred', blurred);
+        let badge = wrapper.querySelector('.blur-badge');
+        if (blurred) {
+          if (!badge) {
+            badge = document.createElement('div');
+            badge.className = 'blur-badge';
+            badge.innerHTML = '<i class="fas fa-eye-slash"></i> Blurred';
+            wrapper.appendChild(badge);
+          }
+        } else {
+          if (badge) badge.remove();
+        }
+      }
+      const toggleBtn = postCard.querySelector('.blur-toggle');
+      if (toggleBtn) {
+        const icon = toggleBtn.querySelector('i');
+        icon.className = blurred ? 'fas fa-eye' : 'fas fa-eye-slash';
+      }
+      const updatedPost = posts.find(p => p.id === postId);
+      if (updatedPost) {
+        const tintInfo = getPostTint(updatedPost, posts);
+        postCard.className = postCard.className.split(' ').filter(c => !c.startsWith('tint-')).join(' ');
+        postCard.classList.add('tint-' + tintInfo.tint);
+        const badgeSpan = postCard.querySelector('.tint-badge');
+        if (badgeSpan) {
+          badgeSpan.textContent = `${tintInfo.emoji} ${tintInfo.badge}`;
+          badgeSpan.className = `tint-badge ${tintInfo.tint}`;
+        }
+      }
+    }
+
+    async function toggleComments(e) {
+      const btn = e.currentTarget;
+      const postId = Number(btn.dataset.id);
+      const section = document.getElementById(`comments-${postId}`);
+      if (!section) return;
+      const isOpen = section.classList.toggle('open');
+      if (isOpen) {
+        openComments.add(postId);
+        const input = document.getElementById(`commentInput-${postId}`);
+        if (input) input.focus();
+        if (!commentsMap.has(postId) || commentsMap.get(postId).length === 0) {
+          await fetchComments([postId]);
+          const list = document.getElementById(`commentList-${postId}`);
+          if (list) {
+            list.innerHTML = renderComments(postId);
+            const countSpan = btn.querySelector('.comment-count');
+            if (countSpan) countSpan.textContent = commentsMap.get(postId).length;
+          }
+        }
+      } else {
+        openComments.delete(postId);
+      }
+    }
+
+    async function handleCommentSubmit(e) {
+      const btn = e.currentTarget;
+      const postId = Number(btn.dataset.post);
+      const input = document.getElementById(`commentInput-${postId}`);
+      const content = input.value.trim();
+      if (!content) { input.focus(); input.style.borderColor = '#f87171'; setTimeout(() => input.style.borderColor = '', 1500); return; }
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      try {
+        const newComment = {
+          post_id: postId,
+          user_email: currentUser?.email || 'user_' + Math.floor(Math.random()*10000) + '@pulse.local',
+          content
+        };
+        const { data, error } = await supabase.from('comments').insert([newComment]).select();
+        if (error) throw error;
+        if (data?.length) {
+          if (!commentsMap.has(postId)) commentsMap.set(postId, []);
+          commentsMap.get(postId).push(data[0]);
+          const list = document.getElementById(`commentList-${postId}`);
+          if (list) list.innerHTML = renderComments(postId);
+          const toggleBtn = document.querySelector(`.comment-toggle[data-id="${postId}"]`);
+          if (toggleBtn) {
+            const countSpan = toggleBtn.querySelector('.comment-count');
+            if (countSpan) countSpan.textContent = commentsMap.get(postId).length;
+          }
+          input.value = '';
+        }
+      } catch (err) { console.error(err); alert('Comment failed'); }
+      finally { btn.disabled = false; btn.textContent = 'Reply'; }
+    }
+
+    async function handleLike(e) {
+      const btn = e.currentTarget;
+      const postId = btn.dataset.id;
+      const span = btn.querySelector('.like-count');
+      const icon = btn.querySelector('i');
+      const cur = parseInt(span.textContent) || 0;
+      const isLiked = btn.classList.toggle('liked');
+      const newVal = isLiked ? cur + 1 : cur - 1;
+      span.textContent = newVal;
+      icon.className = isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+      const idx = posts.findIndex(p => String(p.id) === String(postId));
+      if (idx !== -1) posts[idx].likes_count = newVal;
+      try {
+        const { error } = await supabase.from('posts').update({ likes_count: newVal }).eq('id', postId);
+        if (error) throw error;
+      } catch (err) { console.error(err); }
+    }
+
+    async function handleBookmark(e) {
+      const btn = e.currentTarget;
+      const postId = btn.dataset.id;
+      const span = btn.querySelector('.bookmark-count');
+      const icon = btn.querySelector('i');
+      const cur = parseInt(span.textContent) || 0;
+      const isBookmarked = btn.classList.toggle('bookmarked');
+      const newVal = isBookmarked ? cur + 1 : cur - 1;
+      span.textContent = newVal;
+      icon.className = isBookmarked ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';
+      const idx = posts.findIndex(p => String(p.id) === String(postId));
+      if (idx !== -1) posts[idx].bookmarks_count = newVal;
+      try {
+        const { error } = await supabase.from('posts').update({ bookmarks_count: newVal }).eq('id', postId);
+        if (error) throw error;
+      } catch (err) { console.error(err); }
+    }
+
+    // ==============================================================
+    // Pagination, search, sort, init
+    // ==============================================================
+    async function loadPosts(cursor = null) {
+      if (!hasMore) return;
+      addSkeleton();
+      loadMoreBtn.disabled = true;
+      let query = supabase.from('posts').select('*').order('id', { ascending: false }).limit(PAGE_SIZE);
+      if (cursor) query = query.lt('id', cursor);
+      const { data, error } = await query;
+      removeSkeleton();
+      loadMoreBtn.disabled = false;
+      if (error) { console.error(error); return; }
+      if (data.length < PAGE_SIZE) hasMore = false;
+      if (!data.length) { updateLoadMoreUI(); return; }
+      const newPosts = data;
+      posts = posts.concat(newPosts);
+      const ids = newPosts.map(p => p.id);
+      await fetchComments(ids);
+      renderPosts(newPosts, true);
+      lastId = newPosts[newPosts.length - 1].id;
+      updateLoadMoreUI();
+    }
+
+    function updateLoadMoreUI() {
+      if (hasMore && posts.length && !searchTerm) loadMoreBtn.style.display = 'inline-block';
+      else loadMoreBtn.style.display = 'none';
+    }
+
+    function addSkeleton() {
+      feed.insertAdjacentHTML('beforeend', `<div class="skeleton"><div class="line short"></div><div class="line long"></div><div class="line long" style="width:80%;"></div><div class="line short" style="width:30%;"></div></div>`);
+    }
+    function removeSkeleton() {
+      const sk = feed.querySelector('.skeleton:last-child');
+      if (sk) sk.remove();
+    }
+    function showSkeletons(n=3) {
+      feed.innerHTML = Array(n).fill(0).map(() =>
+        `<div class="skeleton"><div class="line short"></div><div class="line long"></div><div class="line long" style="width:80%;"></div><div class="line short" style="width:30%;"></div></div>`
+      ).join('');
+    }
+
+    async function initFeed() {
+      showSkeletons(3);
+      loadMoreBtn.style.display = 'none';
+      try {
+        await trackVisitor();
+        await fetchStats();
+
+        const { data, error } = await supabase.from('posts').select('*').order('id', { ascending: false }).limit(PAGE_SIZE);
+        if (error) throw error;
+        if (data.length < PAGE_SIZE) hasMore = false;
+        posts = data || [];
+        const ids = posts.map(p => p.id);
+        if (ids.length) await fetchComments(ids);
+        renderPosts(posts, false);
+        if (data.length) lastId = data[data.length-1].id;
+        updateLoadMoreUI();
+        requestNotify();
+
+        setInterval(fetchStats, 30000);
+      } catch (err) {
+        console.error(err);
+        feed.innerHTML = '<div class="empty-state" style="color:#f87171;"><i class="fas fa-circle-exclamation"></i><p>Failed to load feed</p></div>';
+      }
+    }
+
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        const term = this.value.trim().toLowerCase();
+        searchTerm = term;
+        if (!term) { renderPosts(posts, false); updateLoadMoreUI(); return; }
+        const filtered = posts.filter(p => (p.content || '').toLowerCase().includes(term) || (p.title || '').toLowerCase().includes(term));
+        renderPosts(filtered, false);
+        loadMoreBtn.style.display = 'none';
+      }, 300);
+    });
+
+    function applySort(type) {
+      currentSort = type;
+      let arr = searchTerm ? posts.filter(p => (p.content || '').toLowerCase().includes(searchTerm) || (p.title || '').toLowerCase().includes(searchTerm)) : [...posts];
+      if (type === 'trending') arr.sort((a,b) => (b.likes_count||0) - (a.likes_count||0));
+      else if (type === 'random') arr.sort(() => Math.random() - 0.5);
+      else arr.sort((a,b) => b.id - a.id);
+      renderPosts(arr, false);
+      if (searchTerm) loadMoreBtn.style.display = 'none';
+      else updateLoadMoreUI();
+    }
+    sortSelect.addEventListener('change', e => applySort(e.target.value));
+
+    async function createPost() {
+      if (isSubmitting) return;
+      const title = titleInput.value.trim();
+      const username = usernameInput.value.trim();
+      const content = postInput.value.trim();
+      const blurred = blurToggle.checked;
+
+      if (!content) { postInput.focus(); postInput.style.borderColor = '#f87171'; setTimeout(() => postInput.style.borderColor = '', 1500); return; }
+
+      isSubmitting = true;
+      publishBtn.disabled = true;
+      publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+      try {
+        let mediaUrl = null;
+        if (username.length > 0 && selectedFile) {
+          mediaUrl = await uploadFile(selectedFile);
+          if (!mediaUrl) {
+            alert('Failed to upload file. Please try again.');
+            isSubmitting = false;
+            publishBtn.disabled = false;
+            publishBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publish';
+            return;
+          }
+        }
+
+        const tags = extractHashtags(content);
+        const newPost = {
+          title: title || null,
+          username: username || null,
+          content: content,
+          user_email: currentUser?.email || 'user_' + Math.floor(Math.random()*10000) + '@pulse.local',
+          likes_count: 0,
+          bookmarks_count: 0,
+          tags: tags.length ? tags : null,
+          image_url: mediaUrl,
+          blurred: blurred && mediaUrl ? blurred : false
+        };
+        const { data, error } = await supabase.from('posts').insert([newPost]).select();
+        if (error) throw error;
+        if (data?.length) {
+          posts.unshift(data[0]);
+          commentsMap.set(data[0].id, []);
+          renderPosts(posts, false);
+          fireConfetti();
+          titleInput.value = '';
+          usernameInput.value = '';
+          postInput.value = '';
+          mediaFileInput.value = '';
+          selectedFile = null;
+          imagePreview.style.display = 'none';
+          blurToggle.checked = false;
+          updateUploadVisibility();
+          notifyNew(content);
+          fetchStats();
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Publish failed: ' + err.message);
+      } finally {
+        isSubmitting = false;
+        publishBtn.disabled = false;
+        publishBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publish';
+      }
+    }
+
+    publishBtn.addEventListener('click', createPost);
+    postInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); createPost(); } });
+
+    loadMoreBtn.addEventListener('click', async () => {
+      if (!hasMore) return;
+      loadingMore.style.display = 'block';
+      loadMoreBtn.style.display = 'none';
+      await loadPosts(lastId);
+      loadingMore.style.display = 'none';
+      updateLoadMoreUI();
+    });
+
+    document.addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); searchInput.focus(); }
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); document.getElementById('shortcutsModal').classList.toggle('open'); }
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('shortcutsModal');
+        if (modal.classList.contains('open')) modal.classList.remove('open');
+        else if (document.activeElement === searchInput) searchInput.blur();
+      }
+      if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.target.closest('input,textarea,select')) {
+        e.preventDefault(); titleInput.focus();
+      }
+    });
+    document.getElementById('modalCloseBtn').addEventListener('click', () => document.getElementById('shortcutsModal').classList.remove('open'));
+    document.getElementById('shortcutsModal').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+
+    function subscribe() {
+      supabase.channel('public:posts')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, payload => {
+          const p = payload.new;
+          if (posts.some(po => po.id === p.id)) return;
+          posts.unshift(p);
+          commentsMap.set(p.id, []);
+          if (!searchTerm && currentSort === 'new') renderPosts(posts, false);
+          updateLoadMoreUI();
+          notifyNew(p.content || '');
+          fetchStats();
+        })
+        .subscribe();
+      supabase.channel('public:comments')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments' }, payload => {
+          const c = payload.new;
+          const pid = c.post_id;
+          if (commentsMap.has(pid)) {
+            commentsMap.get(pid).push(c);
+            const list = document.getElementById(`commentList-${pid}`);
+            if (list) list.innerHTML = renderComments(pid);
+            const toggle = document.querySelector(`.comment-toggle[data-id="${pid}"]`);
+            if (toggle) {
+              const cs = toggle.querySelector('.comment-count');
+              if (cs) cs.textContent = commentsMap.get(pid).length;
+            }
+          }
+          fetchStats();
+        })
+        .subscribe();
+    }
+
+    // ==============================================================
+    // Support embed script (unchanged)
+    // ==============================================================
+    (function() {
+      var btn = document.getElementById('showWidgetBtn');
+      var widgetDiv = document.getElementById('widgetContainer');
+      var closeBtn = document.getElementById('closeWidgetBtn');
+
+      if (btn && widgetDiv) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (widgetDiv.style.display === 'none' || widgetDiv.style.display === '') {
+            widgetDiv.style.display = 'block';
+          } else {
+            widgetDiv.style.display = 'none';
+          }
+        });
+
+        if (closeBtn) {
+          closeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            widgetDiv.style.display = 'none';
+          });
+        }
+
+        document.addEventListener('click', function(event) {
+          var container = document.getElementById('tipButtonContainer');
+          if (container && !container.contains(event.target)) {
+            widgetDiv.style.display = 'none';
+          }
+        });
+      }
+    })();
+
+    // ==============================================================
+    // Start
+    // ==============================================================
+    checkAuth().then(() => {
+      initFeed();
+      subscribe();
+    });
+
+  })();
+</script>
 </body>
 </html>
