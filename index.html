@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>✨ Pulse – Stats & Upload</title>
+  <title>✨ Pulse – World Forum</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,7 +12,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
   <style>
-    /* ===== Base styles (same as before) ===== */
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
       font-family:"Inter",sans-serif;
@@ -27,418 +26,191 @@
     }
     .app-container { max-width:780px; width:100%; }
 
-    /* ===== SIMPLE INTRO PREVIEW ===== */
     #intro-overlay {
-      position:fixed;
-      top:0; left:0; width:100%; height:100%;
-      background:#0b0d15;
-      z-index:9999;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      align-items:center;
+      position:fixed; top:0; left:0; width:100%; height:100%;
+      background:#0b0d15; z-index:9999;
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
       transition:opacity 0.8s ease;
     }
-    #intro-overlay.hidden {
-      opacity:0;
-      pointer-events:none;
-    }
+    #intro-overlay.hidden { opacity:0; pointer-events:none; }
     .intro-title {
-      font-size:3rem;
-      font-weight:700;
-      background:linear-gradient(135deg,#a78bfa,#f472b6);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      animation: introPop 0.8s ease-out forwards, introFadeOut 0.6s ease-in forwards 1.2s;
-      opacity:0;
-      transform:scale(0.9);
-    }
-    .intro-sub {
-      color:#64748b;
-      font-size:1rem;
-      margin-top:0.8rem;
-      animation: introFadeIn 1s ease-out forwards 0.3s, introFadeOut 0.6s ease-in forwards 1.4s;
-      opacity:0;
-    }
-    .intro-loader {
-      margin-top:1.5rem;
-      width:36px;
-      height:36px;
-      border:3px solid rgba(255,255,255,0.06);
-      border-top-color:#a78bfa;
-      border-radius:50%;
-      animation: spin 1s linear infinite, introFadeIn 1s ease-out forwards 0.5s, introFadeOut 0.6s ease-in forwards 1.6s;
-      opacity:0;
-    }
-    @keyframes introPop {
-      to { opacity:1; transform:scale(1); }
-    }
-    @keyframes introFadeIn {
-      to { opacity:1; }
-    }
-    @keyframes introFadeOut {
-      to { opacity:0; }
-    }
-    @keyframes spin {
-      to { transform:rotate(360deg); }
-    }
-
-    /* Header (unchanged) */
-    .header {
-      display:flex; flex-wrap:wrap; align-items:center; gap:0.75rem;
-      margin-bottom:1.5rem; padding:0 0.5rem;
-    }
-    .header h1 {
-      font-size:1.8rem; font-weight:700;
-      background:linear-gradient(135deg,#a78bfa,#f472b6);
+      font-size:3.8rem; font-weight:800;
+      background:linear-gradient(90deg, #a78bfa, #f472b6, #34d399);
+      background-size:200% 200%;
       -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-      margin-right:auto;
+      animation: introPop 0.8s ease-out forwards, rainbowShift 3s ease infinite;
+      opacity:0; transform:scale(0.9); letter-spacing:4px;
     }
-    .header-controls {
-      display:flex; align-items:center; gap:0.5rem;
-      flex-wrap:wrap;
-    }
+    .intro-sub { color:#94a3b8; font-size:1.1rem; margin-top:0.8rem; animation: introFadeIn 1s ease-out forwards 0.3s, introFadeOut 0.6s ease-in forwards 1.6s; opacity:0; }
+    .intro-loader { margin-top:1.5rem; width:36px; height:36px; border:3px solid rgba(255,255,255,0.06); border-top-color:#a78bfa; border-radius:50%; animation: spin 1s linear infinite, introFadeIn 1s ease-out forwards 0.5s, introFadeOut 0.6s ease-in forwards 1.8s; opacity:0; }
+    @keyframes introPop { to { opacity:1; transform:scale(1); } }
+    @keyframes introFadeIn { to { opacity:1; } }
+    @keyframes introFadeOut { to { opacity:0; } }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes rainbowShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    .header { display:flex; flex-wrap:wrap; align-items:center; gap:0.75rem; margin-bottom:0.75rem; padding:0 0.5rem; }
+    .header h1 { font-size:1.8rem; font-weight:700; background:linear-gradient(135deg,#a78bfa,#f472b6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-right:auto; }
+    .header-controls { display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
     .header-controls input[type="search"] {
-      background:rgba(255,255,255,0.06);
-      border:1px solid rgba(255,255,255,0.08);
-      border-radius:40px; padding:0.5rem 1rem 0.5rem 2.5rem;
-      color:#eef2ff; font-family:Inter; font-size:0.9rem;
-      outline:none; width:180px; transition:border 0.2s, width 0.3s;
+      background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); border-radius:40px; padding:0.5rem 1rem 0.5rem 2.5rem;
+      color:#eef2ff; font-family:Inter; font-size:0.9rem; outline:none; width:180px; transition:border 0.2s, width 0.3s;
       background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
-      background-repeat:no-repeat; background-position:0.75rem center;
-      background-size:16px;
+      background-repeat:no-repeat; background-position:0.75rem center; background-size:16px;
     }
-    .header-controls input[type="search"]:focus {
-      border-color:#a78bfa; width:220px;
-    }
+    .header-controls input[type="search"]:focus { border-color:#a78bfa; width:220px; }
     .header-controls select {
-      background:rgba(255,255,255,0.06);
-      border:1px solid rgba(255,255,255,0.08);
-      border-radius:40px; padding:0.5rem 1rem;
-      color:#eef2ff; font-family:Inter; font-size:0.9rem;
-      outline:none; cursor:pointer;
+      background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); border-radius:40px; padding:0.5rem 1rem;
+      color:#eef2ff; font-family:Inter; font-size:0.9rem; outline:none; cursor:pointer;
     }
     .auth-btn {
-      background:rgba(255,255,255,0.08);
-      border:1px solid rgba(255,255,255,0.1);
-      border-radius:40px;
-      padding:0.4rem 1rem 0.4rem 0.6rem;
-      color:#eef2ff;
-      font-family:Inter;
-      font-size:0.85rem;
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      transition:all 0.2s ease;
-      white-space:nowrap;
+      background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1); border-radius:40px;
+      padding:0.4rem 1rem 0.4rem 0.6rem; color:#eef2ff; font-family:Inter; font-size:0.85rem;
+      cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s ease; white-space:nowrap;
     }
-    .auth-btn:hover {
-      background:rgba(255,255,255,0.15);
-      border-color:#a78bfa;
-    }
-    .auth-btn .avatar-small {
-      width:28px;
-      height:28px;
-      border-radius:50%;
-      object-fit:cover;
-      background:linear-gradient(135deg,#4f46e5,#a78bfa);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:600;
-      font-size:0.7rem;
-      color:white;
-    }
+    .auth-btn:hover { background:rgba(255,255,255,0.15); border-color:#a78bfa; }
+    .auth-btn .avatar-small { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#4f46e5,#a78bfa); display:flex; align-items:center; justify-content:center; font-weight:600; font-size:0.7rem; color:white; }
     .auth-btn i { font-size:1rem; color:#94a3b8; }
-    .auth-btn .email-text {
-      max-width:120px;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      font-size:0.8rem;
-    }
+    .auth-btn .email-text { max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.8rem; }
     .auth-login i { color:#a78bfa; }
+    .subscribe-btn {
+      background:linear-gradient(135deg,#fbbf24,#f59e0b); border:none; border-radius:40px;
+      padding:0.4rem 1.2rem; color:#0b0d15; font-weight:700; font-size:0.85rem;
+      cursor:pointer; transition:all 0.2s ease; font-family:Inter; display:flex; align-items:center; gap:6px;
+      box-shadow:0 4px 15px rgba(251,191,36,0.3);
+    }
+    .subscribe-btn:hover { transform:scale(1.05); box-shadow:0 8px 25px rgba(251,191,36,0.5); }
 
-    /* Stats Dashboard */
+    .stats-marquee {
+      overflow:hidden; white-space:nowrap; background:rgba(167,139,250,0.08); border:1px solid rgba(255,255,255,0.08);
+      padding:0.6rem 0; margin-bottom:1rem; border-radius:40px; position:relative;
+    }
+    .marquee-content { display:inline-block; animation: scroll 25s linear infinite; color:#94a3b8; font-size:0.85rem; font-weight:600; }
+    .marquee-content span { margin:0 2rem; }
+    @keyframes scroll { 0%{transform:translateX(100%)} 100%{transform:translateX(-100%)} }
+
     .stats-dashboard {
-      background:rgba(255,255,255,0.04);
-      backdrop-filter:blur(20px);
-      border:1px solid rgba(255,255,255,0.06);
-      border-radius:24px;
-      padding:1rem 1.5rem;
-      margin-bottom:1.5rem;
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      gap:0.75rem 1rem;
+      background:rgba(255,255,255,0.04); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.06);
+      border-radius:24px; padding:1rem 1.5rem; margin-bottom:1.5rem;
+      display:grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap:0.75rem 1rem;
     }
-    .stat-item {
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      text-align:center;
-    }
-    .stat-value {
-      font-size:1.4rem;
-      font-weight:700;
-      color:#f1f5f9;
-      line-height:1.2;
-    }
-    .stat-label {
-      font-size:0.7rem;
-      text-transform:uppercase;
-      letter-spacing:0.5px;
-      color:#94a3b8;
-      margin-top:0.1rem;
-    }
-    .stat-item .stat-icon {
-      margin-bottom:0.15rem;
-      font-size:0.9rem;
-      color:#a78bfa;
-    }
+    .stat-item { display:flex; flex-direction:column; align-items:center; text-align:center; }
+    .stat-value { font-size:1.4rem; font-weight:700; color:#f1f5f9; line-height:1.2; }
+    .stat-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; margin-top:0.1rem; }
+    .stat-item .stat-icon { margin-bottom:0.15rem; font-size:0.9rem; color:#a78bfa; }
     .stat-online .stat-value { color:#34d399; }
     .stat-visitors .stat-value { color:#fbbf24; }
 
-    /* Support Widget */
-    #tipButtonContainer {
-      position: relative;
-      display: block;
-      width: 100%;
-      z-index: 1;
-      margin-bottom: 1.5rem;
-    }
+    #tipButtonContainer { position:relative; display:block; width:100%; z-index:1; margin-bottom:1.5rem; }
     #showWidgetBtn {
-      background: linear-gradient(135deg, red, orange, yellow, green, blue, indigo, violet);
-      background-size: 400% 400%;
-      border: none;
-      color: white;
-      padding: 14px 20px;
-      font-size: 18px;
-      font-weight: bold;
-      border-radius: 50px;
-      cursor: pointer;
-      box-shadow: 0 0 15px rgba(255,0,255,0.6), 0 4px 10px rgba(0,0,0,0.3);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      letter-spacing: 1px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background:linear-gradient(135deg, red, orange, yellow, green, blue, indigo, violet);
+      background-size:400% 400%; border:none; color:white; padding:14px 20px; font-size:18px; font-weight:bold;
+      border-radius:50px; cursor:pointer; box-shadow:0 0 15px rgba(255,0,255,0.6),0 4px 10px rgba(0,0,0,0.3);
+      font-family:'Segoe UI',sans-serif; letter-spacing:1px; transition:transform 0.3s ease, box-shadow 0.3s ease;
       animation: gradientShift 3s ease infinite, subtleGlow 1.8s ease-in-out infinite alternate;
-      display: block;
-      width: 100%;
-      text-align: center;
-      box-sizing: border-box;
+      display:block; width:100%; text-align:center; box-sizing:border-box;
     }
-    #showWidgetBtn:hover {
-      transform: scale(1.02);
-      animation: gradientShift 3s ease infinite, subtleGlow 0.8s ease-in-out infinite alternate;
-      letter-spacing: 2px;
-    }
-    #showWidgetBtn:active { transform: scale(0.97); }
+    #showWidgetBtn:hover { transform:scale(1.02); letter-spacing:2px; }
+    #showWidgetBtn:active { transform:scale(0.97); }
+    @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    @keyframes subtleGlow { 0%{box-shadow:0 0 5px rgba(255,0,255,0.4),0 4px 10px rgba(0,0,0,0.3)} 100%{box-shadow:0 0 25px rgba(255,255,0,0.8),0 6px 15px rgba(0,0,0,0.4)} }
     #widgetContainer {
-      display: none;
-      position: absolute;
-      top: calc(100% + 12px);
-      left: 0;
-      width: 100%;
-      min-width: 200px;
-      max-width: 100%;
-      z-index: 9999;
-      background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
-      overflow: hidden;
-      animation: fadeInUp 0.3s ease, glowPulse 2s ease-in-out infinite;
-      box-sizing: border-box;
+      display:none; position:absolute; top:calc(100% + 12px); left:0; width:100%; z-index:9999;
+      background:linear-gradient(145deg,#1a1a2e,#16213e); border-radius:20px;
+      box-shadow:0 20px 40px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.1);
+      overflow:hidden; animation:fadeInUp 0.3s ease;
     }
-    #widgetContainer .header-bar {
-      background: rgba(0,0,0,0.4);
-      padding: 10px 14px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    #widgetContainer .header-bar span {
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
-      font-weight: bold;
-      font-size: 13px;
-      letter-spacing: 0.5px;
-    }
-    #widgetContainer .header-bar button {
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 50%;
-      width: 26px;
-      height: 26px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-    }
-    #widgetContainer .header-bar button:hover { background: rgba(255,255,255,0.3); }
-    #widgetContainer iframe {
-      border: none;
-      width: 100%;
-      height: 550px;
-      background: #0f0f1a;
-      filter: brightness(0.85) contrast(1.1) invert(0.02) sepia(0.1);
-      display: block;
-      box-sizing: border-box;
-    }
-    #widgetContainer .footer-note {
-      background: rgba(0,0,0,0.5);
-      padding: 6px 14px;
-      border-top: 1px solid rgba(255,255,255,0.05);
-      text-align: center;
-      font-family: 'Segoe UI', sans-serif;
-      font-size: 11px;
-      color: #aaa;
-    }
+    #widgetContainer .header-bar { background:rgba(0,0,0,0.4); padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center; }
+    #widgetContainer .header-bar span { color:white; font-family:'Segoe UI',sans-serif; font-weight:bold; font-size:13px; }
+    #widgetContainer .header-bar button { background:rgba(255,255,255,0.1); border:none; color:white; font-size:16px; cursor:pointer; border-radius:50%; width:26px; height:26px; display:flex; align-items:center; justify-content:center; transition:all 0.2s ease; }
+    #widgetContainer .header-bar button:hover { background:rgba(255,255,255,0.3); }
+    #widgetContainer iframe { border:none; width:100%; height:550px; background:#0f0f1a; display:block; }
+    #widgetContainer .footer-note { background:rgba(0,0,0,0.5); padding:6px 14px; border-top:1px solid rgba(255,255,255,0.05); text-align:center; font-family:'Segoe UI',sans-serif; font-size:11px; color:#aaa; }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
 
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    @keyframes subtleGlow {
-      0% { box-shadow: 0 0 5px rgba(255,0,255,0.4), 0 4px 10px rgba(0,0,0,0.3); text-shadow: 0 0 2px white; }
-      100% { box-shadow: 0 0 25px rgba(255,255,0,0.8), 0 6px 15px rgba(0,0,0,0.4); text-shadow: 0 0 6px rgba(255,255,255,0.8); }
-    }
-    @keyframes glowPulse {
-      0% { box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1); }
-      100% { box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 0 2px rgba(255,215,0,0.3); }
-    }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(-8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Create Post */
     .create-post {
-      background:rgba(255,255,255,0.04);
-      backdrop-filter:blur(20px);
-      border:1px solid rgba(255,255,255,0.08);
-      border-radius:24px; padding:1.5rem;
-      margin-bottom:2rem;
-      box-shadow:0 20px 40px -12px rgba(0,0,0,0.6);
+      background:rgba(255,255,255,0.04); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08);
+      border-radius:24px; padding:1.5rem; margin-bottom:1.5rem; box-shadow:0 20px 40px -12px rgba(0,0,0,0.6);
     }
-    .create-post .form-row {
-      display:flex; gap:0.75rem; margin-bottom:0.75rem;
-      flex-wrap:wrap;
-    }
-    .create-post .form-row input,
-    .create-post .form-row select {
-      flex:1; min-width:120px;
-      background:rgba(0,0,0,0.3);
-      border:1px solid rgba(255,255,255,0.06);
-      border-radius:12px; padding:0.6rem 1rem;
-      color:#eef2ff; font-family:Inter; font-size:0.9rem;
+    .create-post .form-row { display:flex; gap:0.75rem; margin-bottom:0.75rem; flex-wrap:wrap; }
+    .create-post .form-row input, .create-post .form-row select {
+      flex:1; min-width:120px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06);
+      border-radius:12px; padding:0.6rem 1rem; color:#eef2ff; font-family:Inter; font-size:0.9rem;
       outline:none; transition:border 0.2s;
     }
-    .create-post .form-row input:focus {
-      border-color:#a78bfa;
-    }
+    .create-post .form-row input:focus, .create-post .form-row select:focus { border-color:#a78bfa; }
     .create-post textarea {
-      width:100%; background:rgba(0,0,0,0.3);
-      border:1px solid rgba(255,255,255,0.06);
-      border-radius:16px; padding:1rem;
-      color:#eef2ff; font-size:0.95rem; font-family:Inter;
-      resize:vertical; min-height:80px; outline:none;
-      transition:border 0.2s;
+      width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06);
+      border-radius:16px; padding:1rem; color:#eef2ff; font-size:0.95rem; font-family:Inter;
+      resize:vertical; min-height:80px; outline:none; transition:border 0.2s;
     }
     .create-post textarea:focus { border-color:#a78bfa; }
-
-    .upload-row {
-      display:none;
-      gap:0.75rem;
-      margin-bottom:0.75rem;
-      flex-wrap:wrap;
-      align-items:center;
-    }
+    .upload-row { display:none; gap:0.75rem; margin-bottom:0.75rem; flex-wrap:wrap; align-items:center; }
     .upload-row.visible { display:flex; }
-    .upload-row .file-upload {
-      position:relative;
-      flex:2;
-      min-width:150px;
-    }
-    .upload-row .file-upload input[type="file"] {
-      position:absolute; opacity:0; width:100%; height:100%; cursor:pointer;
-    }
+    .upload-row .file-upload { position:relative; flex:2; min-width:150px; }
+    .upload-row .file-upload input[type="file"] { position:absolute; opacity:0; width:100%; height:100%; cursor:pointer; }
     .upload-row .file-upload .file-label {
-      background:rgba(167,139,250,0.15);
-      border:1px dashed rgba(167,139,250,0.3);
-      border-radius:40px; padding:0.4rem 1.2rem;
-      color:#a78bfa; font-size:0.85rem; cursor:pointer;
-      display:flex; align-items:center; gap:6px;
-      transition:all 0.2s ease;
+      background:rgba(167,139,250,0.15); border:1px dashed rgba(167,139,250,0.3);
+      border-radius:40px; padding:0.4rem 1.2rem; color:#a78bfa; font-size:0.85rem;
+      cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.2s ease;
     }
-    .upload-row .file-upload .file-label:hover {
-      background:rgba(167,139,250,0.25);
-    }
+    .upload-row .file-upload .file-label:hover { background:rgba(167,139,250,0.25); }
     .upload-row .file-upload .file-label i { font-size:1rem; }
-    .upload-row .image-preview {
-      max-width:100px; max-height:60px; object-fit:contain;
-      border-radius:8px; border:1px solid rgba(255,255,255,0.1);
-      display:none;
-    }
-    .upload-row .upload-hint {
-      color:#64748b;
-      font-size:0.8rem;
-      margin-left:0.25rem;
-      flex:0 0 auto;
-    }
-    .upload-row .blur-check {
-      display:flex; align-items:center; gap:6px;
-      color:#94a3b8; font-size:0.85rem; cursor:pointer;
-    }
-    .upload-row .blur-check input[type="checkbox"] {
-      width:18px; height:18px; accent-color:#a78bfa;
-      cursor:pointer;
-    }
-
-    .create-post .form-actions {
-      display:flex; justify-content:space-between; align-items:center;
-      margin-top:1rem; gap:1rem; flex-wrap:wrap;
-    }
-    .create-post .form-actions .left {
-      display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
-    }
+    .upload-row .image-preview { max-width:100px; max-height:60px; object-fit:contain; border-radius:8px; border:1px solid rgba(255,255,255,0.1); display:none; }
+    .upload-row .upload-hint { color:#64748b; font-size:0.8rem; margin-left:0.25rem; flex:0 0 auto; }
+    .upload-row .blur-check { display:flex; align-items:center; gap:6px; color:#94a3b8; font-size:0.85rem; cursor:pointer; }
+    .upload-row .blur-check input[type="checkbox"] { width:18px; height:18px; accent-color:#a78bfa; cursor:pointer; }
+    .create-post .form-actions { display:flex; justify-content:space-between; align-items:center; margin-top:1rem; gap:1rem; flex-wrap:wrap; }
+    .create-post .form-actions .left { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
     .create-post .form-actions button {
-      background:linear-gradient(135deg,#7c3aed,#db2777);
-      border:none; padding:0.6rem 1.8rem; border-radius:40px;
-      color:white; font-weight:600; font-size:0.9rem;
-      cursor:pointer; transition:all 0.2s ease;
-      box-shadow:0 4px 15px rgba(124,58,237,0.3);
-      display:flex; align-items:center; gap:8px;
+      background:linear-gradient(135deg,#7c3aed,#db2777); border:none; padding:0.6rem 1.8rem; border-radius:40px;
+      color:white; font-weight:600; font-size:0.9rem; cursor:pointer; transition:all 0.2s ease;
+      box-shadow:0 4px 15px rgba(124,58,237,0.3); display:flex; align-items:center; gap:8px;
     }
     .create-post .form-actions button:hover { transform:scale(1.03); }
     .create-post .form-actions button:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
 
-    /* Feed */
+    .filter-row {
+      display:flex; flex-wrap:wrap; align-items:center; gap:0.75rem;
+      margin-bottom:1rem; padding:0 0.5rem;
+    }
+    .filter-row select {
+      background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08);
+      border-radius:40px; padding:0.4rem 1rem; color:#eef2ff; font-family:Inter; font-size:0.85rem;
+      outline:none; cursor:pointer; min-width:120px;
+    }
+    .filter-row select option { background:#1e293b; }
+    .filter-row .toggle-group {
+      display:flex; gap:0.5rem; flex-wrap:wrap;
+    }
+    .filter-row .toggle-btn {
+      background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+      border-radius:40px; padding:0.4rem 1.2rem; color:#94a3b8; font-size:0.8rem; font-weight:500;
+      cursor:pointer; transition:all 0.2s ease; display:flex; align-items:center; gap:6px;
+      min-width:90px; justify-content:center;
+    }
+    .filter-row .toggle-btn:hover { background:rgba(255,255,255,0.1); }
+    .filter-row .toggle-btn.active {
+      background:rgba(167,139,250,0.2); color:#a78bfa; border-color:#a78bfa; box-shadow:0 0 15px rgba(167,139,250,0.15);
+    }
+    .filter-row .toggle-btn i { font-size:0.8rem; }
+
     .feed-list { display:flex; flex-direction:column; gap:1.25rem; }
     .post-card {
-      background:rgba(255,255,255,0.04);
-      backdrop-filter:blur(20px);
-      border:1px solid rgba(255,255,255,0.06);
-      border-radius:24px; padding:1.5rem;
-      transition:all 0.25s cubic-bezier(0.2,0,0,1);
-      box-shadow:0 10px 30px -10px rgba(0,0,0,0.4);
-      animation:fadeSlideUp 0.4s ease forwards;
-      opacity:0;
-      position:relative;
-      overflow:hidden;
+      background:rgba(255,255,255,0.04); backdrop-filter:blur(20px);
+      border:1px solid rgba(255,255,255,0.06); border-radius:24px; padding:1.5rem;
+      transition:all 0.25s cubic-bezier(0.2,0,0,1); box-shadow:0 10px 30px -10px rgba(0,0,0,0.4);
+      animation:fadeSlideUp 0.4s ease forwards; opacity:0; position:relative; overflow:hidden;
     }
-    .post-card:hover {
-      transform:translateY(-2px);
-      box-shadow:0 20px 40px -12px rgba(0,0,0,0.7);
-    }
-    @keyframes fadeSlideUp {
-      from { opacity:0; transform:translateY(20px); }
-      to { opacity:1; transform:translateY(0); }
-    }
+    .post-card:hover { transform:translateY(-2px); box-shadow:0 20px 40px -12px rgba(0,0,0,0.7); }
+    @keyframes fadeSlideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+    .post-card.role-admin { border: 2px solid #ff0033; box-shadow:0 0 30px rgba(255,0,51,0.2); }
+    .post-card.role-admin .post-user .name { color: #ff0033 !important; }
+    .post-card.role-mod { border: 2px solid #ff8800; box-shadow:0 0 30px rgba(255,136,0,0.2); }
+    .post-card.role-mod .post-user .name { color: #ff8800 !important; }
+    .post-card.role-unverified { border: 2px solid rgba(255,255,255,0.2); box-shadow:0 0 30px rgba(255,255,255,0.05); }
+    .post-card.role-unverified .post-user .name { color: #aaa !important; }
     .post-card.tint-admin { border-left:6px solid #ef4444; }
     .post-card.tint-mod { border-left:6px solid #f97316; }
     .post-card.tint-bot { border-left:6px solid #eab308; }
@@ -447,12 +219,7 @@
     .post-card.tint-repeat { border-left:6px solid #a855f7; }
     .post-card.tint-blurred { border-left:6px solid #ec4899; }
 
-    .tint-badge {
-      display:inline-block; font-size:0.6rem; font-weight:600;
-      padding:0.1rem 0.6rem; border-radius:40px;
-      margin-left:8px; text-transform:uppercase;
-      letter-spacing:0.5px;
-    }
+    .tint-badge { display:inline-block; font-size:0.6rem; font-weight:600; padding:0.1rem 0.6rem; border-radius:40px; margin-left:8px; text-transform:uppercase; letter-spacing:0.5px; }
     .tint-badge.admin { background:#ef4444; color:white; }
     .tint-badge.mod { background:#f97316; color:white; }
     .tint-badge.bot { background:#eab308; color:#0b0d15; }
@@ -461,289 +228,109 @@
     .tint-badge.repeat { background:#a855f7; color:white; }
     .tint-badge.blurred { background:#ec4899; color:white; }
 
-    .post-header {
-      display:flex; align-items:center; gap:0.75rem; margin-bottom:0.5rem;
-    }
-    .avatar {
-      width:40px; height:40px; border-radius:40px;
-      background:linear-gradient(135deg,#4f46e5,#a78bfa);
-      display:flex; align-items:center; justify-content:center;
-      font-weight:600; font-size:1rem; color:white; flex-shrink:0;
-    }
+    .post-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.5rem; }
+    .avatar { width:40px; height:40px; border-radius:40px; background:linear-gradient(135deg,#4f46e5,#a78bfa); display:flex; align-items:center; justify-content:center; font-weight:600; font-size:1rem; color:white; flex-shrink:0; }
     .post-user { font-weight:600; font-size:0.95rem; }
+    .post-user .name { color:#eef2ff; }
     .post-user span { color:#94a3b8; font-weight:400; margin-left:6px; font-size:0.8rem; }
-    .post-title {
-      font-size:1.2rem; font-weight:700; margin:0.25rem 0 0.5rem 0;
-      color:#f1f5f9;
-    }
-    .post-time {
-      margin-left:auto; font-size:0.75rem; color:#64748b;
-      background:rgba(0,0,0,0.2); padding:4px 10px; border-radius:40px;
-    }
-    .post-content {
-      font-size:1rem; line-height:1.6; color:#f1f5f9;
-      margin-bottom:0.75rem; word-wrap:break-word;
-    }
+    .post-title { font-size:1.2rem; font-weight:700; margin:0.25rem 0 0.5rem 0; color:#f1f5f9; }
+    .post-time { margin-left:auto; font-size:0.75rem; color:#64748b; background:rgba(0,0,0,0.2); padding:4px 10px; border-radius:40px; }
+    .post-content { font-size:1rem; line-height:1.6; color:#f1f5f9; margin-bottom:0.75rem; word-wrap:break-word; }
     .post-content .hashtag { color:#a78bfa; cursor:pointer; }
-    .post-tags {
-      display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;
-    }
-    .post-tags .tag-pill {
-      background:rgba(167,139,250,0.15);
-      padding:0.2rem 0.7rem; border-radius:40px;
-      font-size:0.7rem; color:#a78bfa;
-    }
+    .post-content.editing { outline:2px solid #a78bfa; border-radius:8px; padding:0.3rem; }
+    .post-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem; }
+    .post-tags .tag-pill { background:rgba(167,139,250,0.15); padding:0.2rem 0.7rem; border-radius:40px; font-size:0.7rem; color:#a78bfa; }
 
-    .post-image-wrapper {
-      position:relative; margin:0.5rem 0 1rem 0;
-      border-radius:16px; overflow:hidden;
-      border:1px solid rgba(255,255,255,0.05);
-      background:rgba(0,0,0,0.2);
-    }
-    .post-image-wrapper img {
-      width:100%; height:auto; display:block; transition:filter 0.3s ease;
-    }
-    .post-image-wrapper video {
-      width:100%; height:auto; display:block; transition:filter 0.3s ease;
-    }
-    .post-image-wrapper.blurred img,
-    .post-image-wrapper.blurred video {
-      filter:blur(12px);
-    }
-    .post-image-wrapper .blur-badge {
-      position:absolute; top:12px; right:12px;
-      background:rgba(236,72,153,0.9);
-      color:white; font-size:0.7rem; font-weight:600;
-      padding:0.3rem 0.8rem; border-radius:40px;
-      display:flex; align-items:center; gap:6px;
-      backdrop-filter:blur(4px);
-      border:1px solid rgba(255,255,255,0.1);
-    }
-    .post-image-wrapper .blur-badge i { font-size:0.8rem; }
+    .post-image-wrapper { position:relative; margin:0.5rem 0 1rem 0; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.05); background:rgba(0,0,0,0.2); cursor:pointer; }
+    .post-image-wrapper img { width:100%; height:auto; display:block; transition:filter 0.3s ease; }
+    .post-image-wrapper video { width:100%; height:auto; display:block; transition:filter 0.3s ease; }
+    .post-image-wrapper.blurred img, .post-image-wrapper.blurred video { filter:blur(12px); }
+    .post-image-wrapper .blur-badge { position:absolute; top:12px; right:12px; background:rgba(236,72,153,0.9); color:white; font-size:0.7rem; font-weight:600; padding:0.3rem 0.8rem; border-radius:40px; display:flex; align-items:center; gap:6px; backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,0.1); }
 
-    .post-footer {
-      display:flex; align-items:center; gap:1.5rem;
-      padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.05);
-      flex-wrap:wrap;
-    }
-    .post-footer button {
-      background:none; border:none; color:#94a3b8;
-      font-size:0.9rem; cursor:pointer; padding:4px 8px;
-      border-radius:40px; transition:all 0.15s ease;
-      font-family:Inter; display:flex; align-items:center; gap:6px;
-    }
+    .lock-overlay, .age-overlay { position:absolute; inset:0; background:rgba(11,13,21,0.92); backdrop-filter:blur(16px); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:20; border-radius:24px; text-align:center; padding:2rem; }
+    .lock-overlay i, .age-overlay i { font-size:2.5rem; color:#94a3b8; margin-bottom:1rem; }
+    .lock-overlay p, .age-overlay p { color:#eef2ff; margin-bottom:0.75rem; font-weight:500; }
+    .lock-overlay input, .age-overlay input { background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:40px; padding:0.6rem 1.2rem; color:#eef2ff; text-align:center; margin-bottom:0.75rem; outline:none; width:200px; }
+    .lock-overlay input:focus, .age-overlay input:focus { border-color:#a78bfa; }
+    .lock-overlay .unlock-btn, .age-overlay .unlock-btn { background:linear-gradient(135deg,#7c3aed,#db2777); border:none; padding:0.5rem 1.5rem; border-radius:40px; color:#fff; font-weight:600; cursor:pointer; transition:transform 0.2s ease; }
+    .lock-overlay .unlock-btn:hover, .age-overlay .unlock-btn:hover { transform:scale(1.04); }
+    .lock-error { color:#f87171; font-size:0.85rem; margin-top:0.5rem; }
+
+    .post-footer { display:flex; align-items:center; gap:1.5rem; padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.05); flex-wrap:wrap; }
+    .post-footer button { background:none; border:none; color:#94a3b8; font-size:0.9rem; cursor:pointer; padding:4px 8px; border-radius:40px; transition:all 0.15s ease; font-family:Inter; display:flex; align-items:center; gap:6px; }
     .post-footer button i { font-size:1.1rem; transition:transform 0.2s ease; }
     .post-footer button.liked { color:#f472b6; }
     .post-footer button.liked i { font-weight:900; transform:scale(1.1); animation:pop 0.3s ease; }
-    @keyframes pop {
-      0% { transform:scale(1); }
-      50% { transform:scale(1.5); }
-      100% { transform:scale(1.1); }
-    }
+    @keyframes pop { 50%{transform:scale(1.5)} }
     .post-footer button:hover { color:#eef2ff; }
     .post-footer button.liked:hover { color:#ec4899; }
     .post-footer button.bookmarked { color:#fbbf24; }
     .post-footer button.bookmarked i { font-weight:900; }
-    .post-footer .comment-toggle { color:#94a3b8; cursor:pointer; }
-    .post-footer .comment-toggle:hover { color:#eef2ff; }
-    .post-footer .blur-toggle { color:#94a3b8; cursor:pointer; }
-    .post-footer .blur-toggle:hover { color:#eef2ff; }
-    .badge-new {
-      background:#f472b6; color:#0b0d15; font-size:0.6rem;
-      font-weight:700; padding:0.15rem 0.5rem; border-radius:40px;
-      margin-left:0.5rem; text-transform:uppercase;
-    }
+    .post-footer .delete-btn { color:#f87171; }
+    .post-footer .delete-btn:hover { color:#ef4444; }
+    .post-footer .view-count { color:#94a3b8; font-size:0.85rem; display:flex; align-items:center; gap:4px; }
+    .post-footer .view-count i { font-size:0.9rem; }
 
-    .comments-section {
-      margin-top:1rem;
-      border-top:1px solid rgba(255,255,255,0.06);
-      padding-top:1rem;
-      display:none;
-    }
+    .badge-new { background:#f472b6; color:#0b0d15; font-size:0.6rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:40px; margin-left:0.5rem; text-transform:uppercase; }
+    .members-badge { background:#a78bfa; color:#0b0d15; font-size:0.6rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:40px; margin-left:0.5rem; text-transform:uppercase; }
+    .subscribers-badge { background:#fbbf24; color:#0b0d15; font-size:0.6rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:40px; margin-left:0.5rem; text-transform:uppercase; }
+
+    .comments-section { margin-top:1rem; border-top:1px solid rgba(255,255,255,0.06); padding-top:1rem; display:none; }
     .comments-section.open { display:block; }
-    .comment-item {
-      display:flex; gap:0.75rem; margin-bottom:0.75rem; align-items:flex-start;
-    }
-    .comment-avatar {
-      width:28px; height:28px; border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      font-weight:600; font-size:0.7rem; color:white;
-      flex-shrink:0; background:#4f46e5;
-    }
-    .comment-body {
-      background:rgba(255,255,255,0.04);
-      border-radius:12px; padding:0.5rem 0.75rem; flex:1;
-    }
-    .comment-body .comment-user {
-      font-weight:500; font-size:0.8rem; color:#cbd5e1;
-    }
-    .comment-body .comment-user span {
-      color:#64748b; font-weight:400; margin-left:4px; font-size:0.7rem;
-    }
-    .comment-body .comment-text {
-      font-size:0.9rem; margin-top:2px; color:#e2e8f0;
-    }
-    .comment-form {
-      display:flex; gap:0.5rem; margin-top:0.75rem;
-    }
-    .comment-form input {
-      flex:1; background:rgba(0,0,0,0.3);
-      border:1px solid rgba(255,255,255,0.06);
-      border-radius:40px; padding:0.5rem 1rem;
-      color:#eef2ff; font-family:Inter; font-size:0.85rem;
-      outline:none; transition:border 0.2s;
-    }
+    .comment-item { display:flex; gap:0.75rem; margin-bottom:0.75rem; align-items:flex-start; }
+    .comment-avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:0.7rem; color:white; flex-shrink:0; background:#4f46e5; }
+    .comment-body { background:rgba(255,255,255,0.04); border-radius:12px; padding:0.5rem 0.75rem; flex:1; }
+    .comment-body .comment-user { font-weight:500; font-size:0.8rem; color:#cbd5e1; }
+    .comment-body .comment-user span { color:#64748b; font-weight:400; margin-left:4px; font-size:0.7rem; }
+    .comment-body .comment-text { font-size:0.9rem; margin-top:2px; color:#e2e8f0; }
+    .comment-form { display:flex; gap:0.5rem; margin-top:0.75rem; }
+    .comment-form input { flex:1; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:40px; padding:0.5rem 1rem; color:#eef2ff; font-family:Inter; font-size:0.85rem; outline:none; transition:border 0.2s; }
     .comment-form input:focus { border-color:#a78bfa; }
-    .comment-form button {
-      background:rgba(167,139,250,0.2);
-      border:1px solid rgba(167,139,250,0.3);
-      border-radius:40px; padding:0.5rem 1.2rem;
-      color:#a78bfa; font-weight:600; font-size:0.8rem;
-      cursor:pointer; transition:all 0.2s ease;
-      white-space:nowrap;
-    }
+    .comment-form button { background:rgba(167,139,250,0.2); border:1px solid rgba(167,139,250,0.3); border-radius:40px; padding:0.5rem 1.2rem; color:#a78bfa; font-weight:600; font-size:0.8rem; cursor:pointer; transition:all 0.2s ease; white-space:nowrap; }
     .comment-form button:hover { background:rgba(167,139,250,0.35); }
     .comment-form button:disabled { opacity:0.5; cursor:not-allowed; }
 
     .load-more-container { text-align:center; margin-top:1.5rem; }
-    .load-more-btn {
-      background:#334155; border:none; color:white;
-      padding:0.8rem 2rem; border-radius:40px;
-      cursor:pointer; font-family:Inter; font-weight:600;
-      transition:all 0.2s ease;
-    }
+    .load-more-btn { background:#334155; border:none; color:white; padding:0.8rem 2rem; border-radius:40px; cursor:pointer; font-family:Inter; font-weight:600; transition:all 0.2s ease; }
     .load-more-btn:hover { background:#475569; }
     .load-more-btn:disabled { opacity:0.5; cursor:not-allowed; }
     .loading-more { color:#64748b; display:none; }
 
-    .skeleton {
-      background:rgba(255,255,255,0.04); border-radius:24px;
-      padding:1.5rem; border:1px solid rgba(255,255,255,0.04);
-      animation:pulse 1.5s ease-in-out infinite;
-    }
+    .skeleton { background:rgba(255,255,255,0.04); border-radius:24px; padding:1.5rem; border:1px solid rgba(255,255,255,0.04); animation:pulse 1.5s ease-in-out infinite; }
     @keyframes pulse { 0%,100% { opacity:0.4; } 50% { opacity:0.7; } }
-    .skeleton .line {
-      height:14px; background:rgba(255,255,255,0.06);
-      border-radius:10px; margin-bottom:10px;
-    }
+    .skeleton .line { height:14px; background:rgba(255,255,255,0.06); border-radius:10px; margin-bottom:10px; }
     .skeleton .line.short { width:40%; }
     .skeleton .line.long { width:100%; }
 
-    /* Login Modal */
-    .modal-overlay {
-      position:fixed;
-      top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.7);
-      backdrop-filter:blur(8px);
-      display:none;
-      justify-content:center;
-      align-items:center;
-      z-index:10000;
-    }
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(12px); display:none; justify-content:center; align-items:center; z-index:10000; }
     .modal-overlay.open { display:flex; }
-    .modal-content {
-      background:#1e293b;
-      padding:2rem;
-      border-radius:24px;
-      max-width:400px;
-      width:90%;
-      box-shadow:0 40px 80px rgba(0,0,0,0.8);
-      border:1px solid rgba(255,255,255,0.06);
-      position:relative;
-    }
-    .modal-content h2 {
-      font-size:1.5rem;
-      margin-bottom:1.5rem;
-      background:linear-gradient(135deg,#a78bfa,#f472b6);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      text-align:center;
-    }
-    .modal-content .form-group {
-      margin-bottom:1rem;
-    }
-    .modal-content .form-group label {
-      display:block;
-      color:#94a3b8;
-      font-size:0.85rem;
-      margin-bottom:0.3rem;
-    }
-    .modal-content .form-group input {
-      width:100%;
-      background:rgba(0,0,0,0.3);
-      border:1px solid rgba(255,255,255,0.06);
-      border-radius:12px;
-      padding:0.7rem 1rem;
-      color:#eef2ff;
-      font-family:Inter;
-      font-size:0.95rem;
-      outline:none;
-      transition:border 0.2s;
-    }
-    .modal-content .form-group input:focus {
-      border-color:#a78bfa;
-    }
-    .modal-content .modal-actions {
-      display:flex;
-      gap:0.75rem;
-      margin-top:1.5rem;
-      flex-wrap:wrap;
-    }
-    .modal-content .modal-actions button {
-      flex:1;
-      padding:0.6rem;
-      border:none;
-      border-radius:40px;
-      font-weight:600;
-      font-size:0.9rem;
-      cursor:pointer;
-      transition:all 0.2s ease;
-      font-family:Inter;
-      min-width:80px;
-    }
-    .modal-content .modal-actions .btn-primary {
-      background:linear-gradient(135deg,#7c3aed,#db2777);
-      color:white;
-      box-shadow:0 4px 15px rgba(124,58,237,0.3);
-    }
-    .modal-content .modal-actions .btn-primary:hover {
-      transform:scale(1.02);
-    }
-    .modal-content .modal-actions .btn-secondary {
-      background:rgba(255,255,255,0.08);
-      color:#eef2ff;
-      border:1px solid rgba(255,255,255,0.1);
-    }
-    .modal-content .modal-actions .btn-secondary:hover {
-      background:rgba(255,255,255,0.15);
-    }
-    .modal-content .modal-close-btn {
-      position:absolute;
-      top:12px;
-      right:16px;
-      background:none;
-      border:none;
-      color:#94a3b8;
-      font-size:1.4rem;
-      cursor:pointer;
-      transition:color 0.2s;
-      font-family:Inter;
-    }
-    .modal-content .modal-close-btn:hover {
-      color:#eef2ff;
-    }
-    .modal-error {
-      color:#f87171;
-      font-size:0.85rem;
-      margin-top:0.5rem;
-      text-align:center;
-      display:none;
-    }
+    .modal-content { background:#1e293b; padding:2rem; border-radius:24px; max-width:500px; width:90%; box-shadow:0 40px 80px rgba(0,0,0,0.8); border:1px solid rgba(255,255,255,0.06); max-height:90vh; overflow-y:auto; position:relative; }
+    .modal-content h2 { font-size:1.5rem; margin-bottom:1.5rem; background:linear-gradient(135deg,#a78bfa,#f472b6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center; }
+    .modal-close-btn { position:absolute; top:12px; right:16px; background:none; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; transition:color 0.2s; font-family:Inter; }
+    .modal-close-btn:hover { color:#eef2ff; }
+    .modal-content .form-group { margin-bottom:1rem; }
+    .modal-content .form-group label { display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:0.3rem; }
+    .modal-content .form-group input { width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:0.7rem 1rem; color:#eef2ff; font-family:Inter; font-size:0.95rem; outline:none; transition:border 0.2s; }
+    .modal-content .form-group input:focus { border-color:#a78bfa; }
+    .modal-error { color:#f87171; font-size:0.85rem; text-align:center; display:none; margin-top:0.5rem; }
+    .modal-content .modal-actions { display:flex; gap:0.75rem; margin-top:1.5rem; flex-wrap:wrap; }
+    .modal-content .modal-actions button { flex:1; padding:0.6rem; border:none; border-radius:40px; font-weight:600; font-size:0.9rem; cursor:pointer; transition:all 0.2s ease; font-family:Inter; min-width:80px; }
+    .modal-content .modal-actions .btn-primary { background:linear-gradient(135deg,#7c3aed,#db2777); color:white; box-shadow:0 4px 15px rgba(124,58,237,0.3); }
+    .modal-content .modal-actions .btn-primary:hover { transform:scale(1.02); }
+    .modal-content .modal-actions .btn-secondary { background:rgba(255,255,255,0.08); color:#eef2ff; border:1px solid rgba(255,255,255,0.1); }
+    .modal-content .modal-actions .btn-secondary:hover { background:rgba(255,255,255,0.15); }
+    .modal-content .shortcut-grid { display:grid; grid-template-columns:1fr 2fr; gap:0.5rem 1rem; font-size:0.9rem; }
+    .modal-content .shortcut-grid .key { color:#94a3b8; text-align:right; }
+    .modal-content .shortcut-grid .desc { color:#eef2ff; }
 
-    /* Shortcuts modal */
-    #shortcutsModal .modal-content {
-      max-width:500px;
-    }
+    .processor-select { width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:0.8rem; color:#eef2ff; margin-bottom:1rem; font-family:Inter; }
+    .pay-btn { width:100%; padding:1rem; border-radius:12px; border:none; font-weight:700; font-size:1.1rem; cursor:pointer; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:1.5rem; }
+    .crypto-box { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem; margin-top:1rem; }
+    .crypto-addr { display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.3); padding:0.5rem; border-radius:8px; margin:0.5rem 0; font-family:monospace; font-size:0.85rem; word-break:break-all; }
+    .copy-btn { background:#a78bfa; border:none; color:#fff; padding:0.3rem 0.8rem; border-radius:6px; cursor:pointer; font-size:0.8rem; }
+    .disclaimer { font-size:0.75rem; color:#94a3b8; margin-top:1rem; line-height:1.4; }
+    .modal-close { margin-top:1.5rem; width:100%; padding:0.8rem; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1); border-radius:40px; color:#eef2ff; cursor:pointer; font-weight:600; }
+    .modal-close:hover { background:rgba(255,255,255,0.15); }
 
     .empty-state { text-align:center; padding:3rem 1rem; color:#64748b; }
     .empty-state i { font-size:3rem; margin-bottom:1rem; opacity:0.3; }
@@ -761,1231 +348,1457 @@
       .post-footer { flex-wrap:wrap; gap:0.75rem; }
       .stats-dashboard { grid-template-columns: repeat(2, 1fr); }
       .header-controls .auth-btn .email-text { display:none; }
+      .filter-row { flex-direction:column; align-items:stretch; }
+      .filter-row .toggle-group { justify-content:center; }
     }
   </style>
 </head>
 <body>
 
-<!-- ===== SIMPLE INTRO PREVIEW ===== -->
-<div id="intro-overlay">
-  <div class="intro-title">✨ Pulse</div>
-  <div class="intro-sub">Your universe awaits</div>
-  <div class="intro-loader"></div>
-</div>
-
-<!-- ===== Login Modal ===== -->
-<div id="loginModal" class="modal-overlay">
-  <div class="modal-content">
-    <button class="modal-close-btn" id="loginModalClose">&times;</button>
-    <h2 id="authTitle">Welcome Back</h2>
-    <div class="form-group">
-      <label for="loginEmail">Email</label>
-      <input type="email" id="loginEmail" placeholder="you@example.com" />
-    </div>
-    <div class="form-group">
-      <label for="loginPassword">Password</label>
-      <input type="password" id="loginPassword" placeholder="••••••••" />
-    </div>
-    <div class="modal-error" id="loginError"></div>
-    <div class="modal-actions">
-      <button class="btn-primary" id="loginSignInBtn">Sign In</button>
-      <button class="btn-secondary" id="loginSignUpBtn">Sign Up</button>
-    </div>
-    <div style="text-align:center;margin-top:0.8rem;font-size:0.8rem;color:#64748b;" id="authSwitchText">
-      Don't have an account? <a id="authSwitchLink" style="color:#a78bfa;cursor:pointer;">Sign Up</a>
-    </div>
-  </div>
-</div>
-
-<!-- ===== Shortcuts Modal ===== -->
-<div id="shortcutsModal" class="modal-overlay">
-  <div class="modal-content">
-    <h2><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h2>
-    <div class="shortcut-grid">
-      <span class="key"><kbd>?</kbd></span><span class="desc">Toggle help</span>
-      <span class="key"><kbd>Esc</kbd></span><span class="desc">Close modal / search</span>
-      <span class="key"><kbd>⌘K</kbd> or <kbd>Ctrl+K</kbd></span><span class="desc">Focus search</span>
-      <span class="key"><kbd>j</kbd> / <kbd>k</kbd></span><span class="desc">Navigate posts</span>
-      <span class="key"><kbd>n</kbd></span><span class="desc">New post focus</span>
-    </div>
-    <button class="modal-close" id="modalCloseBtn">Close</button>
-  </div>
-</div>
-
-<!-- ===== App ===== -->
-<div class="app-container">
-
-  <div class="header">
-    <h1><i class="fas fa-bolt" style="margin-right:8px;"></i> Pulse</h1>
-    <div class="header-controls">
-      <input type="search" id="searchInput" placeholder="Search posts..." />
-      <select id="sortSelect">
-        <option value="new">Newest</option>
-        <option value="trending">Trending</option>
-        <option value="random">Random</option>
-      </select>
-      <button id="authBtn" class="auth-btn auth-login">
-        <i class="fas fa-sign-in-alt"></i> Login
-      </button>
-    </div>
+  <!-- Intro overlay -->
+  <div id="intro-overlay">
+    <div class="intro-title">✨ PULSE</div>
+    <div class="intro-sub">Designing the future of web experiences</div>
+    <div class="intro-loader"></div>
   </div>
 
-  <!-- Stats Dashboard -->
-  <div class="stats-dashboard" id="statsDashboard">
-    <div class="stat-item">
-      <div class="stat-icon"><i class="fas fa-pen-fancy"></i></div>
-      <div class="stat-value" id="statPosts">-</div>
-      <div class="stat-label">Posts</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-icon"><i class="fas fa-reply"></i></div>
-      <div class="stat-value" id="statReplies">-</div>
-      <div class="stat-label">Replies</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-icon"><i class="fas fa-crown"></i></div>
-      <div class="stat-value" id="statAdmins">-</div>
-      <div class="stat-label">Admins</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
-      <div class="stat-value" id="statMods">-</div>
-      <div class="stat-label">Mods</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-icon"><i class="fas fa-robot"></i></div>
-      <div class="stat-value" id="statBots">-</div>
-      <div class="stat-label">Bots</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-icon"><i class="fas fa-users"></i></div>
-      <div class="stat-value" id="statUsers">-</div>
-      <div class="stat-label">Users</div>
-    </div>
-    <div class="stat-item stat-online">
-      <div class="stat-icon"><i class="fas fa-circle" style="color:#34d399;font-size:0.7rem;"></i></div>
-      <div class="stat-value" id="statOnline">-</div>
-      <div class="stat-label">Online</div>
-    </div>
-    <div class="stat-item stat-visitors">
-      <div class="stat-icon"><i class="fas fa-globe"></i></div>
-      <div class="stat-value" id="statVisitors">-</div>
-      <div class="stat-label">Total Visitors</div>
-    </div>
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox-overlay" onclick="closeLightbox()">
+    <img id="lightboxImg" class="lightbox-img" src="" alt="" />
   </div>
 
-  <!-- Support Embed -->
-  <div id="tipButtonContainer">
-    <button id="showWidgetBtn">✨ Support Us ✨</button>
-    <div id="widgetContainer">
-      <div class="header-bar">
-        <span>🌙 DARK MODE • SUPPORT US</span>
-        <button id="closeWidgetBtn">✕</button>
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close-btn" id="loginModalClose">&times;</button>
+      <h2 id="authTitle">Welcome Back</h2>
+      <div class="form-group">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" />
       </div>
-      <iframe 
-        id='kofiframe' 
-        src='https://ko-fi.com/patreonplus/?hidefeed=true&widget=true&embed=true&preview=true' 
-        title='patreonplus'
-        loading="lazy">
-      </iframe>
-      <div class="footer-note">⚡ Your support keeps the content flowing</div>
+      <div class="form-group">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" />
+      </div>
+      <div class="modal-error" id="loginError"></div>
+      <div class="modal-actions">
+        <button class="btn-primary" id="loginSignInBtn">Sign In</button>
+        <button class="btn-secondary" id="loginSignUpBtn">Sign Up</button>
+      </div>
+      <div style="text-align:center;margin-top:0.8rem;font-size:0.8rem;color:#64748b;" id="authSwitchText">
+        Don't have an account? <a id="authSwitchLink" style="color:#a78bfa;cursor:pointer;">Sign Up</a>
+      </div>
     </div>
   </div>
 
-  <div class="create-post">
-    <div class="form-row">
-      <input type="text" id="titleInput" placeholder="Post title..." style="flex:1.5;" />
-      <input type="text" id="usernameInput" placeholder="Username (optional)" style="flex:1;" />
+  <!-- Payment Modal -->
+  <div id="paymentModal" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close-btn" onclick="togglePaymentModal(false)">&times;</button>
+      <h2><i class="fas fa-crown"></i> Vetted Member Access</h2>
+      <select id="processorSelect" class="processor-select"></select>
+      <button id="dynamicPayBtn" class="pay-btn" style="background:#003087;color:#fff;"><i class="fab fa-paypal"></i> Pay with PayPal</button>
+      <div class="crypto-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+          <span style="font-weight:600;"><i class="fab fa-bitcoin" style="color:#f7931a;"></i> Bitcoin (BTC)</span>
+          <span style="font-size:0.8rem;color:#94a3b8;">Network: BTC</span>
+        </div>
+        <div class="crypto-addr">
+          <span id="btcAddr">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</span>
+          <button class="copy-btn" onclick="copyBTC()"><i class="fas fa-copy"></i> Copy</button>
+        </div>
+        <div class="disclaimer">
+          <strong>EN:</strong> FIAT terminated. BTC transactions are immutable and zero-refund.<br>
+          <strong>PT:</strong> FIAT encerrado. Transações BTC são imutáveis e sem reembolso.<br>
+          <strong>ZH:</strong> 法币已终止。BTC交易不可逆且不予退款。
+        </div>
+      </div>
+      <button class="modal-close" onclick="togglePaymentModal(false)">Close</button>
     </div>
-    <textarea id="postInput" placeholder="What's on your mind? Use #hashtags ✨" rows="2"></textarea>
+  </div>
 
-    <div class="upload-row" id="uploadRow">
-      <div class="file-upload">
-        <input type="file" id="mediaFileInput" accept="image/*" />
-        <label for="mediaFileInput" class="file-label">
-          <i class="fas fa-upload"></i> <span id="fileLabelText">Choose Image</span>
+  <!-- Shortcuts Modal -->
+  <div id="shortcutsModal" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close-btn" onclick="document.getElementById('shortcutsModal').classList.remove('open')">&times;</button>
+      <h2><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h2>
+      <div class="shortcut-grid">
+        <span class="key"><kbd>?</kbd></span><span class="desc">Toggle help</span>
+        <span class="key"><kbd>Esc</kbd></span><span class="desc">Close modal / search</span>
+        <span class="key"><kbd>⌘K</kbd> or <kbd>Ctrl+K</kbd></span><span class="desc">Focus search</span>
+        <span class="key"><kbd>j</kbd> / <kbd>k</kbd></span><span class="desc">Navigate posts</span>
+        <span class="key"><kbd>n</kbd></span><span class="desc">New post focus</span>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('shortcutsModal').classList.remove('open')">Close</button>
+    </div>
+  </div>
+
+  <!-- ===== APP ===== -->
+  <div class="app-container">
+
+    <div class="header">
+      <h1><i class="fas fa-bolt" style="margin-right:8px;"></i> Pulse</h1>
+      <div class="header-controls">
+        <input type="search" id="searchInput" placeholder="Search posts..." />
+        <select id="sortSelect">
+          <option value="new">Newest</option>
+          <option value="trending">Trending</option>
+          <option value="random">Random</option>
+        </select>
+        <button id="subscribeBtn" class="subscribe-btn" style="display:none;">
+          <i class="fas fa-crown"></i> Subscribe
+        </button>
+        <button id="authBtn" class="auth-btn auth-login">
+          <i class="fas fa-sign-in-alt"></i> Login
+        </button>
+      </div>
+    </div>
+
+    <!-- Scrolling Marquee -->
+    <div class="stats-marquee">
+      <div class="marquee-content">
+        <span><i class="fas fa-bolt"></i> Welcome to World Forum Pulse</span>
+        <span><i class="fas fa-users"></i> <strong id="marqueeActive">1,240</strong> Active</span>
+        <span><i class="fas fa-shield-alt"></i> <strong id="marqueeAdmins">12</strong> Admins Online</span>
+        <span><i class="fas fa-lock"></i> End-to-End Privacy Enabled</span>
+      </div>
+    </div>
+
+    <!-- Stats Dashboard -->
+    <div class="stats-dashboard" id="statsDashboard">
+      <div class="stat-item"><div class="stat-icon"><i class="fas fa-pen-fancy"></i></div><div class="stat-value" id="statPosts">-</div><div class="stat-label">Posts</div></div>
+      <div class="stat-item"><div class="stat-icon"><i class="fas fa-reply"></i></div><div class="stat-value" id="statReplies">-</div><div class="stat-label">Replies</div></div>
+      <div class="stat-item"><div class="stat-icon"><i class="fas fa-crown"></i></div><div class="stat-value" id="statAdmins">-</div><div class="stat-label">Admins</div></div>
+      <div class="stat-item"><div class="stat-icon"><i class="fas fa-shield-alt"></i></div><div class="stat-value" id="statMods">-</div><div class="stat-label">Mods</div></div>
+      <div class="stat-item"><div class="stat-icon"><i class="fas fa-robot"></i></div><div class="stat-value" id="statBots">-</div><div class="stat-label">Bots</div></div>
+      <div class="stat-item"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-value" id="statUsers">-</div><div class="stat-label">Users</div></div>
+      <div class="stat-item stat-online"><div class="stat-icon"><i class="fas fa-circle" style="color:#34d399;font-size:0.7rem;"></i></div><div class="stat-value" id="statOnline">-</div><div class="stat-label">Online</div></div>
+      <div class="stat-item stat-visitors"><div class="stat-icon"><i class="fas fa-globe"></i></div><div class="stat-value" id="statVisitors">-</div><div class="stat-label">Total Visitors</div></div>
+    </div>
+
+    <!-- Support Widget -->
+    <div id="tipButtonContainer">
+      <button id="showWidgetBtn">✨ Support Us ✨</button>
+      <div id="widgetContainer">
+        <div class="header-bar"><span>🌙 DARK MODE • SUPPORT US</span><button id="closeWidgetBtn">✕</button></div>
+        <iframe id='kofiframe' src='https://ko-fi.com/patreonplus/?hidefeed=true&widget=true&embed=true&preview=true' title='patreonplus' loading="lazy"></iframe>
+        <div class="footer-note">⚡ Your support keeps the content flowing</div>
+      </div>
+    </div>
+
+    <!-- Create Post -->
+    <div class="create-post">
+      <div class="form-row">
+        <input type="text" id="titleInput" placeholder="Post title..." style="flex:1.5;" />
+        <input type="text" id="usernameInput" placeholder="Username (optional)" style="flex:1;" />
+      </div>
+      <textarea id="postInput" placeholder="What's on your mind? Use #hashtags ✨" rows="2"></textarea>
+
+      <!-- Tags select (multi) -->
+      <div class="form-row" style="margin-top:0.5rem;">
+        <select id="tagsSelect" multiple style="flex:2; min-width:150px; height:60px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:0.4rem; color:#eef2ff; font-family:Inter; font-size:0.85rem; outline:none;">
+          <option value="Beauty">Beauty</option>
+          <option value="Fashion">Fashion</option>
+          <option value="Wellness">Wellness</option>
+          <option value="Decor">Decor</option>
+          <option value="Planning">Planning</option>
+          <option value="Jewelry">Jewelry</option>
+          <option value="Fragrance">Fragrance</option>
+          <option value="Aesthetics">Aesthetics</option>
+          <option value="Cafes">Cafes</option>
+          <option value="Media">Media</option>
+          <option value="Crafts">Crafts</option>
+          <option value="Travel">Travel</option>
+        </select>
+        <span style="color:#64748b; font-size:0.75rem; align-self:center;">Hold Ctrl/Cmd to select multiple</span>
+      </div>
+
+      <!-- Upload row -->
+      <div class="upload-row" id="uploadRow">
+        <div class="file-upload">
+          <input type="file" id="mediaFileInput" accept="image/*" />
+          <label for="mediaFileInput" class="file-label">
+            <i class="fas fa-upload"></i> <span id="fileLabelText">Choose Image</span>
+          </label>
+          <img id="imagePreview" class="image-preview" alt="Preview" />
+        </div>
+        <label class="blur-check">
+          <input type="checkbox" id="blurToggle" />
+          <i class="fas fa-eye-slash"></i> Blur
         </label>
-        <img id="imagePreview" class="image-preview" alt="Preview" />
+        <span class="upload-hint" id="uploadHint"></span>
       </div>
-      <label class="blur-check">
-        <input type="checkbox" id="blurToggle" />
-        <i class="fas fa-eye-slash"></i> Blur
-      </label>
-      <span class="upload-hint" id="uploadHint"></span>
+
+      <!-- Password / Age / Members-only / Subscribers-only -->
+      <div class="form-row" style="margin-top:0.5rem;">
+        <input type="password" id="postPassword" placeholder="Lock password (optional)" style="flex:1; min-width:120px;" />
+        <input type="number" id="postAge" placeholder="Min age (0=none)" style="flex:0.5; min-width:100px;" />
+        <label id="membersOnlyLabel" style="display:none; align-items:center; gap:6px; color:#94a3b8; font-size:0.85rem; cursor:pointer;">
+          <input type="checkbox" id="membersOnlyCheck" /> <i class="fas fa-lock"></i> Members
+        </label>
+        <label id="subscribersOnlyLabel" style="display:none; align-items:center; gap:6px; color:#94a3b8; font-size:0.85rem; cursor:pointer;">
+          <input type="checkbox" id="subscribersOnlyCheck" /> <i class="fas fa-crown"></i> Subscribers
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <div class="left">
+          <span style="font-size:0.8rem;color:#475569;"><i class="fas fa-lock"></i> anon</span>
+        </div>
+        <button id="publishBtn"><i class="fas fa-paper-plane"></i> Publish</button>
+      </div>
     </div>
 
-    <div class="form-actions">
-      <div class="left">
-        <span style="font-size:0.8rem;color:#475569;">
-          <i class="fas fa-lock"></i> anon
-        </span>
+    <!-- Filter Row: Tag dropdown + Members/Subscribers toggles -->
+    <div class="filter-row">
+      <select id="tagFilterSelect">
+        <option value="">All Tags</option>
+        <option value="Beauty">Beauty</option>
+        <option value="Fashion">Fashion</option>
+        <option value="Wellness">Wellness</option>
+        <option value="Decor">Decor</option>
+        <option value="Planning">Planning</option>
+        <option value="Jewelry">Jewelry</option>
+        <option value="Fragrance">Fragrance</option>
+        <option value="Aesthetics">Aesthetics</option>
+        <option value="Cafes">Cafes</option>
+        <option value="Media">Media</option>
+        <option value="Crafts">Crafts</option>
+        <option value="Travel">Travel</option>
+      </select>
+
+      <div class="toggle-group" id="toggleGroup" style="display:none;">
+        <button class="toggle-btn" id="membersToggleBtn"><i class="fas fa-lock"></i> Members</button>
+        <button class="toggle-btn" id="subscribersToggleBtn"><i class="fas fa-crown"></i> Subscribers</button>
       </div>
-      <button id="publishBtn"><i class="fas fa-paper-plane"></i> Publish</button>
+    </div>
+
+    <!-- Feed -->
+    <div id="feedContainer" class="feed-list"></div>
+
+    <!-- Load More -->
+    <div class="load-more-container">
+      <button id="loadMoreBtn" class="load-more-btn" style="display:none;">Load More</button>
+      <div id="loadingMore" class="loading-more"><i class="fas fa-spinner fa-spin"></i> Loading more...</div>
     </div>
   </div>
 
-  <div id="feedContainer" class="feed-list"></div>
+  <script>
+    (function() {
+      // ==============================================================
+      // SUPABASE
+      // ==============================================================
+      const SUPABASE_URL = "https://bkvvvlaibtbrrkbuxnke.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_ypObXvuLKlTXutfClJfwJQ_rqaG2mRi";
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  <div class="load-more-container">
-    <button id="loadMoreBtn" class="load-more-btn" style="display:none;">Load More</button>
-    <div id="loadingMore" class="loading-more"><i class="fas fa-spinner fa-spin"></i> Loading more...</div>
-  </div>
-</div>
+      // ==============================================================
+      // INTRO OVERLAY
+      // ==============================================================
+      setTimeout(() => {
+        document.getElementById('intro-overlay').classList.add('hidden');
+      }, 2000);
 
-<script>
-  (function() {
-    // ==============================================================
-    // Supabase config
-    // ==============================================================
-    const SUPABASE_URL = "https://bkvvvlaibtbrrkbuxnke.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_ypObXvuLKlTXutfClJfwJQ_rqaG2mRi";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      // ==============================================================
+      // DOM REFS
+      // ==============================================================
+      const feed = document.getElementById('feedContainer');
+      const titleInput = document.getElementById('titleInput');
+      const usernameInput = document.getElementById('usernameInput');
+      const postInput = document.getElementById('postInput');
+      const mediaFileInput = document.getElementById('mediaFileInput');
+      const imagePreview = document.getElementById('imagePreview');
+      const blurToggle = document.getElementById('blurToggle');
+      const publishBtn = document.getElementById('publishBtn');
+      const loadMoreBtn = document.getElementById('loadMoreBtn');
+      const loadingMore = document.getElementById('loadingMore');
+      const searchInput = document.getElementById('searchInput');
+      const sortSelect = document.getElementById('sortSelect');
+      const uploadRow = document.getElementById('uploadRow');
+      const fileLabelText = document.getElementById('fileLabelText');
+      const uploadHint = document.getElementById('uploadHint');
+      const postPassword = document.getElementById('postPassword');
+      const postAge = document.getElementById('postAge');
+      const tagsSelect = document.getElementById('tagsSelect');
+      const membersOnlyCheck = document.getElementById('membersOnlyCheck');
+      const subscribersOnlyCheck = document.getElementById('subscribersOnlyCheck');
+      const membersOnlyLabel = document.getElementById('membersOnlyLabel');
+      const subscribersOnlyLabel = document.getElementById('subscribersOnlyLabel');
+      const tagFilterSelect = document.getElementById('tagFilterSelect');
+      const membersToggleBtn = document.getElementById('membersToggleBtn');
+      const subscribersToggleBtn = document.getElementById('subscribersToggleBtn');
+      const toggleGroup = document.getElementById('toggleGroup');
+      const subscribeBtn = document.getElementById('subscribeBtn');
 
-    // ==============================================================
-    // Intro overlay auto-hide after 1.8s
-    // ==============================================================
-    setTimeout(() => {
-      const overlay = document.getElementById('intro-overlay');
-      if (overlay) overlay.classList.add('hidden');
-    }, 1800);
+      // Stats
+      const statPosts = document.getElementById('statPosts');
+      const statReplies = document.getElementById('statReplies');
+      const statAdmins = document.getElementById('statAdmins');
+      const statMods = document.getElementById('statMods');
+      const statBots = document.getElementById('statBots');
+      const statUsers = document.getElementById('statUsers');
+      const statOnline = document.getElementById('statOnline');
+      const statVisitors = document.getElementById('statVisitors');
 
-    // ==============================================================
-    // DOM references
-    // ==============================================================
-    const feed = document.getElementById('feedContainer');
-    const titleInput = document.getElementById('titleInput');
-    const usernameInput = document.getElementById('usernameInput');
-    const postInput = document.getElementById('postInput');
-    const mediaFileInput = document.getElementById('mediaFileInput');
-    const imagePreview = document.getElementById('imagePreview');
-    const blurToggle = document.getElementById('blurToggle');
-    const publishBtn = document.getElementById('publishBtn');
-    const loadMoreBtn = document.getElementById('loadMoreBtn');
-    const loadingMore = document.getElementById('loadingMore');
-    const searchInput = document.getElementById('searchInput');
-    const sortSelect = document.getElementById('sortSelect');
-    const uploadRow = document.getElementById('uploadRow');
-    const fileLabelText = document.getElementById('fileLabelText');
-    const uploadHint = document.getElementById('uploadHint');
+      // Auth
+      const authBtn = document.getElementById('authBtn');
+      const loginModal = document.getElementById('loginModal');
+      const loginEmail = document.getElementById('loginEmail');
+      const loginPassword = document.getElementById('loginPassword');
+      const loginError = document.getElementById('loginError');
+      const loginSignInBtn = document.getElementById('loginSignInBtn');
+      const loginSignUpBtn = document.getElementById('loginSignUpBtn');
+      const loginModalClose = document.getElementById('loginModalClose');
+      const authSwitchLink = document.getElementById('authSwitchLink');
+      const authTitle = document.getElementById('authTitle');
+      const authSwitchText = document.getElementById('authSwitchText');
 
-    const statPosts = document.getElementById('statPosts');
-    const statReplies = document.getElementById('statReplies');
-    const statAdmins = document.getElementById('statAdmins');
-    const statMods = document.getElementById('statMods');
-    const statBots = document.getElementById('statBots');
-    const statUsers = document.getElementById('statUsers');
-    const statOnline = document.getElementById('statOnline');
-    const statVisitors = document.getElementById('statVisitors');
+      // ==============================================================
+      // STATE
+      // ==============================================================
+      let currentUser = null;
+      let isLoginMode = true;
+      let posts = [];
+      let lastId = null;
+      let hasMore = true;
+      const PAGE_SIZE = 20;
+      let isSubmitting = false;
+      let searchTerm = '';
+      let currentSort = 'new';
+      const commentsMap = new Map();
+      const openComments = new Set();
+      let selectedFile = null;
 
-    // Auth
-    const authBtn = document.getElementById('authBtn');
-    const loginModal = document.getElementById('loginModal');
-    const loginEmail = document.getElementById('loginEmail');
-    const loginPassword = document.getElementById('loginPassword');
-    const loginError = document.getElementById('loginError');
-    const loginSignInBtn = document.getElementById('loginSignInBtn');
-    const loginSignUpBtn = document.getElementById('loginSignUpBtn');
-    const loginModalClose = document.getElementById('loginModalClose');
-    const authSwitchLink = document.getElementById('authSwitchLink');
-    const authTitle = document.getElementById('authTitle');
-    const authSwitchText = document.getElementById('authSwitchText');
+      // Track viewed posts to prevent double counting in a session
+      const viewedPosts = new Set();
 
-    // ==============================================================
-    // AUTH STATE
-    // ==============================================================
-    let currentUser = null;
-    let isLoginMode = true;
+      // Filters
+      let activeTag = null;
+      let membersFilter = false;
+      let subscribersFilter = false;
 
-    // ==============================================================
-    // FILE STATE (moved to top so updateUploadVisibility can use it)
-    // ==============================================================
-    let selectedFile = null;
-
-    // ==============================================================
-    // Conditional upload visibility (uses selectedFile)
-    // ==============================================================
-    function updateUploadVisibility() {
-      const username = usernameInput.value.trim();
-      const isAdmin = username.toLowerCase() === 'admin';
-      const hasUsername = username.length > 0;
-
-      if (hasUsername) {
-        uploadRow.classList.add('visible');
-        if (isAdmin) {
-          mediaFileInput.removeAttribute('accept');
-          fileLabelText.textContent = 'Upload Any File (Image/Video/Archive...)';
-          uploadHint.textContent = 'Admin: all file types allowed';
-        } else {
-          mediaFileInput.accept = 'image/*';
-          fileLabelText.textContent = 'Choose Image';
-          uploadHint.textContent = 'Images only';
+      // ==============================================================
+      // HELPERS
+      // ==============================================================
+      function timeAgo(date) {
+        const diff = (new Date() - new Date(date)) / 60000;
+        if (diff < 1) return 'just now';
+        if (diff < 60) return Math.floor(diff) + 'm ago';
+        const hrs = Math.floor(diff / 60);
+        if (hrs < 24) return hrs + 'h ago';
+        const days = Math.floor(hrs / 24);
+        if (days < 7) return days + 'd ago';
+        return new Date(date).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+      }
+      function getInitials(name) {
+        if (!name) return '?';
+        const parts = name.split(/[._-]/);
+        if (parts.length === 1) return parts[0].substring(0,2).toUpperCase();
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      function getColor(name) {
+        if (!name) return '#4f46e5';
+        let h = 0;
+        for (let i=0; i<name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+        return 'hsl(' + (Math.abs(h % 360)) + ',70%,55%)';
+      }
+      function escapeHTML(text) {
+        if (!text) return '';
+        const d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+      }
+      function extractHashtags(text) {
+        const m = text.match(/#[\w]+/g);
+        return m ? m.map(t => t.slice(1)) : [];
+      }
+      function getRole(username) {
+        if (!username) return 'unverified';
+        const lower = username.toLowerCase();
+        if (lower === 'admin') return 'admin';
+        if (lower === 'mod') return 'mod';
+        if (lower === 'unverified') return 'unverified';
+        if (lower.includes('bot')) return 'bot';
+        return 'user';
+      }
+      function getRoleBadge(role) {
+        const map = {
+          admin: '<span class="tint-badge admin">👑 Admin</span>',
+          mod: '<span class="tint-badge mod">🛡️ Mod</span>',
+          bot: '<span class="tint-badge bot">🤖 Bot</span>',
+          unverified: '<span class="tint-badge nouser">👤 Unverified</span>',
+        };
+        return map[role] || '';
+      }
+      async function sha256(message) {
+        if (!message) return null;
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+      function requestNotify() {
+        if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+      }
+      function notifyNew(content) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('New post!', { body: content.slice(0,60)+'…' });
         }
-      } else {
-        uploadRow.classList.remove('visible');
-        mediaFileInput.value = '';
-        selectedFile = null;
-        imagePreview.style.display = 'none';
-        uploadHint.textContent = '';
       }
-    }
-
-    usernameInput.addEventListener('input', updateUploadVisibility);
-    updateUploadVisibility();
-
-    mediaFileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        selectedFile = file;
-        if (file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = (ev) => {
-            imagePreview.src = ev.target.result;
-            imagePreview.style.display = 'block';
-          };
-          reader.readAsDataURL(file);
-        } else {
-          imagePreview.style.display = 'none';
-          fileLabelText.textContent = file.name;
+      function fireConfetti() {
+        const canvas = document.createElement('canvas');
+        canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99999;';
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const particles = [];
+        const colors = ['#f472b6','#a78bfa','#34d399','#fbbf24','#ef4444','#3b82f6'];
+        for (let i=0; i<80; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height - canvas.height,
+            vx: (Math.random() - 0.5) * 6,
+            vy: Math.random() * 4 + 2,
+            size: Math.random() * 6 + 2,
+            color: colors[Math.floor(Math.random() * colors.length)],
+          });
         }
-      } else {
-        selectedFile = null;
-        imagePreview.style.display = 'none';
+        (function anim() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          let alive = false;
+          for (let p of particles) {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.1;
+            if (p.y < canvas.height + 50) alive = true;
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+          }
+          if (alive) requestAnimationFrame(anim);
+          else canvas.remove();
+        })();
       }
-    });
+      async function uploadFile(file) {
+        if (!file) return null;
+        const fileName = `post_${Date.now()}_${file.name}`;
+        const { error } = await supabase.storage.from('post-images').upload(fileName, file);
+        if (error) { console.error('Upload error:', error); return null; }
+        const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(fileName);
+        return urlData.publicUrl;
+      }
 
-    // ==============================================================
-    // Auth functions (unchanged)
-    // ==============================================================
-    function updateAuthUI(user) {
-      currentUser = user;
-      if (user) {
-        const email = user.email || 'User';
-        const initials = email.split('@')[0].substring(0,2).toUpperCase();
-        authBtn.innerHTML = `
-          <div class="avatar-small">${initials}</div>
-          <span class="email-text">${email}</span>
-          <i class="fas fa-sign-out-alt" style="font-size:0.8rem;"></i>
-        `;
-        authBtn.className = 'auth-btn';
-        authBtn.onclick = handleLogout;
-        if (!usernameInput.value.trim()) {
-          usernameInput.value = email.split('@')[0];
+      // ==============================================================
+      // VIEW COUNTER
+      // ==============================================================
+      async function incrementView(postId) {
+        if (viewedPosts.has(postId)) return;
+        viewedPosts.add(postId);
+        try {
+          const { data, error } = await supabase.rpc('increment_views', { row_id: postId });
+          if (error) throw error;
+          const newCount = data || 0;
+          // Update local state
+          const postIndex = posts.findIndex(p => p.id === postId);
+          if (postIndex !== -1) posts[postIndex].views_count = newCount;
+          // Update UI
+          const viewSpan = document.querySelector(`.view-count[data-id="${postId}"]`);
+          if (viewSpan) viewSpan.textContent = newCount;
+        } catch (err) {
+          console.error('View increment error:', err);
         }
-      } else {
-        authBtn.innerHTML = `<i class="fas fa-sign-in-alt"></i> Login`;
-        authBtn.className = 'auth-btn auth-login';
-        authBtn.onclick = openLoginModal;
       }
-    }
 
-    function openLoginModal() {
-      loginEmail.value = '';
-      loginPassword.value = '';
-      loginError.style.display = 'none';
-      loginModal.classList.add('open');
-      loginEmail.focus();
-      isLoginMode = true;
-      updateAuthForm();
-    }
-
-    function closeLoginModal() {
-      loginModal.classList.remove('open');
-    }
-
-    function updateAuthForm() {
-      if (isLoginMode) {
-        authTitle.textContent = 'Welcome Back';
-        loginSignInBtn.textContent = 'Sign In';
-        authSwitchText.innerHTML = `Don't have an account? <a id="authSwitchLink" style="color:#a78bfa;cursor:pointer;">Sign Up</a>`;
-        document.getElementById('authSwitchLink').addEventListener('click', function(e) {
-          e.preventDefault();
-          isLoginMode = false;
-          updateAuthForm();
-        });
-      } else {
-        authTitle.textContent = 'Create Account';
-        loginSignInBtn.textContent = 'Sign Up';
-        authSwitchText.innerHTML = `Already have an account? <a id="authSwitchLink" style="color:#a78bfa;cursor:pointer;">Sign In</a>`;
-        document.getElementById('authSwitchLink').addEventListener('click', function(e) {
-          e.preventDefault();
-          isLoginMode = true;
-          updateAuthForm();
-        });
-      }
-      loginError.style.display = 'none';
-    }
-
-    async function handleAuth() {
-      const email = loginEmail.value.trim();
-      const password = loginPassword.value.trim();
-      if (!email || !password) {
-        loginError.textContent = 'Please fill in both fields.';
-        loginError.style.display = 'block';
-        return;
-      }
-      loginError.style.display = 'none';
-      loginSignInBtn.disabled = true;
-      loginSignInBtn.textContent = isLoginMode ? 'Signing in...' : 'Signing up...';
-
-      try {
-        let result;
-        if (isLoginMode) {
-          result = await supabase.auth.signInWithPassword({ email, password });
-        } else {
-          result = await supabase.auth.signUp({ email, password });
-        }
-        if (result.error) throw result.error;
-        const user = result.data.user;
+      // ==============================================================
+      // AUTH
+      // ==============================================================
+      function updateAuthUI(user) {
+        currentUser = user;
         if (user) {
-          closeLoginModal();
-          updateAuthUI(user);
-          fetchStats();
+          const email = user.email || 'User';
+          const initials = email.split('@')[0].substring(0,2).toUpperCase();
+          authBtn.innerHTML = `
+            <div class="avatar-small">${initials}</div>
+            <span class="email-text">${email}</span>
+            <i class="fas fa-sign-out-alt" style="font-size:0.8rem;"></i>
+          `;
+          authBtn.className = 'auth-btn';
+          authBtn.onclick = handleLogout;
+          if (!usernameInput.value.trim()) usernameInput.value = email.split('@')[0];
+          updateUploadVisibility();
+          membersOnlyLabel.style.display = 'flex';
+          subscribersOnlyLabel.style.display = 'flex';
+          toggleGroup.style.display = 'flex';
+          subscribeBtn.style.display = 'inline-flex';
         } else {
-          loginError.textContent = isLoginMode ? 'No user found.' : 'Sign-up successful! Please check your email to confirm.';
-          loginError.style.display = 'block';
+          authBtn.innerHTML = `<i class="fas fa-sign-in-alt"></i> Login`;
+          authBtn.className = 'auth-btn auth-login';
+          authBtn.onclick = openLoginModal;
+          membersOnlyLabel.style.display = 'none';
+          subscribersOnlyLabel.style.display = 'none';
+          toggleGroup.style.display = 'none';
+          subscribeBtn.style.display = 'none';
+          membersFilter = false;
+          subscribersFilter = false;
+          membersToggleBtn.classList.remove('active');
+          subscribersToggleBtn.classList.remove('active');
         }
-      } catch (err) {
-        loginError.textContent = err.message;
-        loginError.style.display = 'block';
-      } finally {
-        loginSignInBtn.disabled = false;
-        loginSignInBtn.textContent = isLoginMode ? 'Sign In' : 'Sign Up';
       }
-    }
-
-    loginSignInBtn.addEventListener('click', handleAuth);
-    loginPassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleAuth(); });
-    loginEmail.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginPassword.focus(); });
-    loginModalClose.addEventListener('click', closeLoginModal);
-    loginModal.addEventListener('click', (e) => { if (e.target === loginModal) closeLoginModal(); });
-
-    async function handleLogout() {
-      try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-        updateAuthUI(null);
-        if (usernameInput.value === currentUser?.email?.split('@')[0]) {
-          usernameInput.value = '';
-        }
-        window.location.reload();
-      } catch (err) {
-        console.error('Logout error:', err);
-        alert('Logout failed: ' + err.message);
+      function openLoginModal() {
+        loginEmail.value = ''; loginPassword.value = ''; loginError.style.display = 'none';
+        loginModal.classList.add('open'); loginEmail.focus(); isLoginMode = true; updateAuthForm();
       }
-    }
-
-    async function checkAuth() {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        if (session?.user) {
-          updateAuthUI(session.user);
+      function closeLoginModal() { loginModal.classList.remove('open'); }
+      function updateAuthForm() {
+        if (isLoginMode) {
+          authTitle.textContent = 'Welcome Back';
+          loginSignInBtn.textContent = 'Sign In';
+          authSwitchText.innerHTML = `Don't have an account? <a id="authSwitchLink" style="color:#a78bfa;cursor:pointer;">Sign Up</a>`;
+          document.getElementById('authSwitchLink').addEventListener('click', function(e) {
+            e.preventDefault(); isLoginMode = false; updateAuthForm();
+          });
         } else {
-          updateAuthUI(null);
+          authTitle.textContent = 'Create Account';
+          loginSignInBtn.textContent = 'Sign Up';
+          authSwitchText.innerHTML = `Already have an account? <a id="authSwitchLink" style="color:#a78bfa;cursor:pointer;">Sign In</a>`;
+          document.getElementById('authSwitchLink').addEventListener('click', function(e) {
+            e.preventDefault(); isLoginMode = true; updateAuthForm();
+          });
         }
-      } catch (err) {
-        console.error('Auth check error:', err);
-        updateAuthUI(null);
+        loginError.style.display = 'none';
       }
-    }
-
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        updateAuthUI(session.user);
-        fetchStats();
-      } else {
-        updateAuthUI(null);
+      async function handleAuth() {
+        const email = loginEmail.value.trim();
+        const password = loginPassword.value.trim();
+        if (!email || !password) { loginError.textContent = 'Please fill in both fields.'; loginError.style.display = 'block'; return; }
+        loginError.style.display = 'none';
+        loginSignInBtn.disabled = true;
+        loginSignInBtn.textContent = isLoginMode ? 'Signing in...' : 'Signing up...';
+        try {
+          let result;
+          if (isLoginMode) result = await supabase.auth.signInWithPassword({ email, password });
+          else result = await supabase.auth.signUp({ email, password });
+          if (result.error) throw result.error;
+          const user = result.data.user;
+          if (user) { closeLoginModal(); updateAuthUI(user); fetchStats(); }
+          else { loginError.textContent = isLoginMode ? 'No user found.' : 'Sign-up successful! Check your email.'; loginError.style.display = 'block'; }
+        } catch (err) { loginError.textContent = err.message; loginError.style.display = 'block'; }
+        finally { loginSignInBtn.disabled = false; loginSignInBtn.textContent = isLoginMode ? 'Sign In' : 'Sign Up'; }
       }
-    });
-
-    // ==============================================================
-    // Visitor tracking & stats (unchanged)
-    // ==============================================================
-    function getVisitorId() {
-      let id = localStorage.getItem('pulse_visitor');
-      if (!id) {
-        id = crypto.randomUUID ? crypto.randomUUID() : 'visitor_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-        localStorage.setItem('pulse_visitor', id);
+      loginSignInBtn.addEventListener('click', handleAuth);
+      loginPassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleAuth(); });
+      loginEmail.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginPassword.focus(); });
+      loginModalClose.addEventListener('click', closeLoginModal);
+      loginModal.addEventListener('click', (e) => { if (e.target === loginModal) closeLoginModal(); });
+      async function handleLogout() {
+        try { const { error } = await supabase.auth.signOut(); if (error) throw error; updateAuthUI(null); window.location.reload(); }
+        catch (err) { console.error('Logout error:', err); alert('Logout failed: ' + err.message); }
       }
-      return id;
-    }
-
-    async function trackVisitor() {
-      const visitorId = getVisitorId();
-      try {
-        const { error } = await supabase
-          .from('visitors')
-          .upsert(
-            { visitor_id: visitorId, last_seen: new Date().toISOString() },
-            { onConflict: 'visitor_id' }
-          );
-        if (error) console.error('Visitor tracking error:', error);
-      } catch (e) { console.error('Visitor tracking error:', e); }
-    }
-
-    async function fetchStats() {
-      try {
-        const { count: postsCount, error: err1 } = await supabase
-          .from('posts')
-          .select('*', { count: 'exact', head: true });
-        if (err1) throw err1;
-
-        const { count: repliesCount, error: err2 } = await supabase
-          .from('comments')
-          .select('*', { count: 'exact', head: true });
-        if (err2) throw err2;
-
-        const { data: usernames, error: err3 } = await supabase
-          .from('posts')
-          .select('username');
-        if (err3) throw err3;
-
-        const adminSet = new Set();
-        const modSet = new Set();
-        const botSet = new Set();
-        usernames.forEach(row => {
-          if (row.username) {
-            const u = row.username.trim();
-            const lower = u.toLowerCase();
-            if (lower.includes('admin')) adminSet.add(u);
-            if (lower.includes('mod')) modSet.add(u);
-            if (lower.includes('bot')) botSet.add(u);
-          }
-        });
-
-        const { data: emails, error: err4 } = await supabase
-          .from('posts')
-          .select('user_email');
-        if (err4) throw err4;
-        const distinctEmails = new Set();
-        emails.forEach(row => { if (row.user_email) distinctEmails.add(row.user_email); });
-
-        const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-        const { count: onlineCount, error: err5 } = await supabase
-          .from('visitors')
-          .select('*', { count: 'exact', head: true })
-          .gte('last_seen', fiveMinAgo);
-        if (err5) throw err5;
-
-        const { data: visitorData, error: err6 } = await supabase
-          .from('visitors')
-          .select('visitor_id');
-        if (err6) throw err6;
-        const totalVisitors = new Set(visitorData.map(row => row.visitor_id)).size;
-
-        statPosts.textContent = postsCount || 0;
-        statReplies.textContent = repliesCount || 0;
-        statAdmins.textContent = adminSet.size || 0;
-        statMods.textContent = modSet.size || 0;
-        statBots.textContent = botSet.size || 0;
-        statUsers.textContent = distinctEmails.size || 0;
-        statOnline.textContent = onlineCount || 0;
-        statVisitors.textContent = totalVisitors || 0;
-
-      } catch (err) {
-        console.error('Stats fetch error:', err);
-        statPosts.textContent = '?';
-        statReplies.textContent = '?';
-        statAdmins.textContent = '?';
-        statMods.textContent = '?';
-        statBots.textContent = '?';
-        statUsers.textContent = '?';
-        statOnline.textContent = '?';
-        statVisitors.textContent = '?';
+      async function checkAuth() {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          if (error) throw error;
+          if (session?.user) updateAuthUI(session.user);
+          else updateAuthUI(null);
+        } catch (err) { console.error('Auth check error:', err); updateAuthUI(null); }
       }
-    }
-
-    // ==============================================================
-    // Helpers (unchanged)
-    // ==============================================================
-    function timeAgo(date) {
-      const diff = (new Date() - new Date(date)) / 60000;
-      if (diff < 1) return 'just now';
-      if (diff < 60) return Math.floor(diff) + 'm ago';
-      const hrs = Math.floor(diff / 60);
-      if (hrs < 24) return hrs + 'h ago';
-      const days = Math.floor(hrs / 24);
-      if (days < 7) return days + 'd ago';
-      return new Date(date).toLocaleDateString('en-US', { month:'short', day:'numeric' });
-    }
-    function getInitials(name) {
-      if (!name) return '?';
-      const parts = name.split(/[._-]/);
-      if (parts.length === 1) return parts[0].substring(0,2).toUpperCase();
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    function getColor(name) {
-      if (!name) return '#4f46e5';
-      let h = 0;
-      for (let i=0; i<name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
-      return 'hsl(' + (Math.abs(h % 360)) + ',70%,55%)';
-    }
-    function escapeHTML(text) {
-      if (!text) return '';
-      const d = document.createElement('div');
-      d.textContent = text;
-      return d.innerHTML;
-    }
-    function extractHashtags(text) {
-      const m = text.match(/#[\w]+/g);
-      return m ? m.map(t => t.slice(1)) : [];
-    }
-
-    function getPostTint(post, allPosts) {
-      const username = post.username || '';
-      const blurred = post.blurred || false;
-
-      if (username.toLowerCase().includes('admin')) return { tint: 'admin', badge: 'Admin', emoji: '👑' };
-      if (username.toLowerCase().includes('mod')) return { tint: 'mod', badge: 'Mod', emoji: '🛡️' };
-      if (username.toLowerCase().includes('bot')) return { tint: 'bot', badge: 'Bot', emoji: '🤖' };
-      if (blurred && post.image_url) return { tint: 'blurred', badge: 'Blurred', emoji: '🌫️' };
-      if (!username || username.trim() === '') return { tint: 'nouser', badge: 'Anonymous', emoji: '👤' };
-
-      const count = allPosts.filter(p => (p.username || '').toLowerCase() === username.toLowerCase()).length;
-      if (count > 1) return { tint: 'repeat', badge: 'Regular', emoji: '💜' };
-      return { tint: 'first', badge: 'First Time', emoji: '💙' };
-    }
-
-    function requestNotify() {
-      if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
-    }
-    function notifyNew(content) {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('New post!', { body: content.slice(0,60)+'…' });
-      }
-    }
-    function fireConfetti() {
-      const canvas = document.createElement('canvas');
-      canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99999;';
-      document.body.appendChild(canvas);
-      const ctx = canvas.getContext('2d');
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const particles = [];
-      const colors = ['#f472b6','#a78bfa','#34d399','#fbbf24','#ef4444','#3b82f6'];
-      for (let i=0; i<80; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height - canvas.height,
-          vx: (Math.random() - 0.5) * 6,
-          vy: Math.random() * 4 + 2,
-          size: Math.random() * 6 + 2,
-          color: colors[Math.floor(Math.random() * colors.length)],
-        });
-      }
-      let frame;
-      (function anim() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        let alive = false;
-        for (let p of particles) {
-          p.x += p.vx;
-          p.y += p.vy;
-          p.vy += 0.1;
-          if (p.y < canvas.height + 50) alive = true;
-          ctx.fillStyle = p.color;
-          ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
-        }
-        if (alive) requestAnimationFrame(anim);
-        else canvas.remove();
-      })();
-    }
-
-    async function uploadFile(file) {
-      if (!file) return null;
-      const fileName = `post_${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage
-        .from('post-images')
-        .upload(fileName, file);
-      if (error) {
-        console.error('Upload error:', error);
-        return null;
-      }
-      const { data: urlData } = supabase.storage
-        .from('post-images')
-        .getPublicUrl(fileName);
-      return urlData.publicUrl;
-    }
-
-    // ==============================================================
-    // Comments & Feed (all functions unchanged)
-    // ==============================================================
-    let posts = [];
-    let lastId = null;
-    let hasMore = true;
-    const PAGE_SIZE = 20;
-    let isSubmitting = false;
-    let searchTerm = '';
-    let currentSort = 'new';
-    const commentsMap = new Map();
-    const openComments = new Set();
-
-    async function fetchComments(postIds) {
-      if (!postIds?.length) return;
-      const { data, error } = await supabase
-        .from('comments')
-        .select('*')
-        .in('post_id', postIds)
-        .order('created_at', { ascending: true });
-      if (error) { console.error(error); return; }
-      const grouped = {};
-      data.forEach(c => { if (!grouped[c.post_id]) grouped[c.post_id] = []; grouped[c.post_id].push(c); });
-      postIds.forEach(id => commentsMap.set(id, grouped[id] || []));
-    }
-
-    function renderPosts(postData, append = false) {
-      if (!postData?.length) {
-        if (!append) feed.innerHTML = '<div class="empty-state"><i class="fas fa-feather-pointed"></i><p>No posts yet. Be the first to shine! ✨</p></div>';
-        return;
-      }
-      let html = '';
-      const now = Date.now();
-      const allPostsForTint = posts;
-      postData.forEach(post => {
-        const username = post.username || '';
-        const displayName = username || 'Anonymous';
-        const initials = getInitials(displayName);
-        const color = getColor(displayName);
-        const likeCount = post.likes_count || 0;
-        const bookmarksCount = post.bookmarks_count || 0;
-        const tags = post.tags || [];
-        const isNew = (now - new Date(post.created_at).getTime()) < 3600000;
-        const commentCount = commentsMap.get(post.id)?.length || 0;
-        const isOpen = openComments.has(post.id);
-        const title = post.title || '';
-
-        const tintInfo = getPostTint(post, allPostsForTint);
-        const tintClass = 'tint-' + tintInfo.tint;
-
-        let content = DOMPurify.sanitize(post.content || '', { ALLOWED_TAGS: ['b','i','u','a','br','p','em','strong'] });
-        content = content.replace(/#(\w+)/g, '<span class="hashtag">#$1</span>');
-
-        let mediaHtml = '';
-        if (post.image_url) {
-          const url = post.image_url;
-          const ext = url.split('.').pop().toLowerCase();
-          const isVideo = ['mp4','webm','ogv','mov','avi','mkv','m4v','wmv','flv'].includes(ext);
-          const isAudio = ['mp3','wav','ogg','aac','flac'].includes(ext);
-          const blurClass = post.blurred ? 'blurred' : '';
-          if (isVideo) {
-            mediaHtml = `
-              <div class="post-image-wrapper ${blurClass}" id="mediaWrapper-${post.id}">
-                <video controls src="${escapeHTML(url)}" onerror="this.style.display='none'"></video>
-                ${post.blurred ? `<div class="blur-badge"><i class="fas fa-eye-slash"></i> Blurred</div>` : ''}
-              </div>
-            `;
-          } else if (isAudio) {
-            mediaHtml = `
-              <div class="post-image-wrapper" id="mediaWrapper-${post.id}">
-                <audio controls src="${escapeHTML(url)}" style="width:100%;"></audio>
-                ${post.blurred ? `<div class="blur-badge"><i class="fas fa-eye-slash"></i> Blurred</div>` : ''}
-              </div>
-            `;
-          } else if (['pdf','doc','docx','txt','zip','rar','7z'].includes(ext)) {
-            mediaHtml = `
-              <div class="post-image-wrapper" id="mediaWrapper-${post.id}" style="padding:0.5rem;text-align:center;">
-                <a href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer" style="color:#a78bfa;text-decoration:underline;">
-                  <i class="fas fa-file"></i> Download ${ext.toUpperCase()} file
-                </a>
-                ${post.blurred ? `<div class="blur-badge"><i class="fas fa-eye-slash"></i> Blurred</div>` : ''}
-              </div>
-            `;
-          } else {
-            mediaHtml = `
-              <div class="post-image-wrapper ${blurClass}" id="mediaWrapper-${post.id}">
-                <img src="${escapeHTML(url)}" alt="Post media" loading="lazy" onerror="this.style.display='none'" />
-                ${post.blurred ? `<div class="blur-badge"><i class="fas fa-eye-slash"></i> Blurred</div>` : ''}
-              </div>
-            `;
-          }
-        }
-
-        html += `
-          <div class="post-card ${tintClass}" data-id="${post.id}" id="post-${post.id}">
-            <div class="post-header">
-              <div class="avatar" style="background:${color};">${initials}</div>
-              <div class="post-user">
-                ${escapeHTML(displayName)}
-                <span>· ${post.user_email || 'anon'}</span>
-                <span class="tint-badge ${tintInfo.tint}">${tintInfo.emoji} ${tintInfo.badge}</span>
-                ${isNew ? '<span class="badge-new">New</span>' : ''}
-              </div>
-              <div class="post-time">${timeAgo(post.created_at)}</div>
-            </div>
-            ${title ? `<div class="post-title">${escapeHTML(title)}</div>` : ''}
-            <div class="post-content">${content}</div>
-            ${tags.length ? `<div class="post-tags">${tags.map(t => `<span class="tag-pill">#${escapeHTML(t)}</span>`).join('')}</div>` : ''}
-            ${mediaHtml}
-            <div class="post-footer">
-              <button class="like-btn" data-id="${post.id}">
-                <i class="fa-regular fa-heart"></i> <span class="like-count">${likeCount}</span>
-              </button>
-              <button class="bookmark-btn" data-id="${post.id}">
-                <i class="fa-regular fa-bookmark"></i> <span class="bookmark-count">${bookmarksCount}</span>
-              </button>
-              ${post.image_url ? `<button class="blur-toggle" data-id="${post.id}" title="Toggle Blur">
-                <i class="fas ${post.blurred ? 'fa-eye' : 'fa-eye-slash'}"></i>
-              </button>` : ''}
-              <button class="comment-toggle" data-id="${post.id}">
-                <i class="fa-regular fa-comment"></i> <span class="comment-count">${commentCount}</span>
-              </button>
-            </div>
-            <div class="comments-section ${isOpen ? 'open' : ''}" id="comments-${post.id}">
-              <div id="commentList-${post.id}">${renderComments(post.id)}</div>
-              <div class="comment-form">
-                <input type="text" placeholder="Write a reply..." id="commentInput-${post.id}" />
-                <button data-post="${post.id}" class="comment-submit">Reply</button>
-              </div>
-            </div>
-          </div>
-        `;
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (session?.user) { updateAuthUI(session.user); fetchStats(); }
+        else updateAuthUI(null);
       });
 
-      if (append) feed.insertAdjacentHTML('beforeend', html);
-      else feed.innerHTML = html;
-
-      feed.querySelectorAll('.like-btn').forEach(b => b.addEventListener('click', handleLike));
-      feed.querySelectorAll('.bookmark-btn').forEach(b => b.addEventListener('click', handleBookmark));
-      feed.querySelectorAll('.blur-toggle').forEach(b => b.addEventListener('click', toggleBlur));
-      feed.querySelectorAll('.comment-toggle').forEach(b => b.addEventListener('click', toggleComments));
-      feed.querySelectorAll('.comment-submit').forEach(b => b.addEventListener('click', handleCommentSubmit));
-      feed.querySelectorAll('.comment-form input').forEach(i => i.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          i.parentElement.querySelector('.comment-submit')?.click();
-        }
-      }));
-    }
-
-    function renderComments(postId) {
-      const comments = commentsMap.get(postId) || [];
-      if (!comments.length) return '<div style="color:#64748b;font-size:0.85rem;padding:0.25rem 0;">No replies yet.</div>';
-      return comments.map(c => {
-        const name = c.user_email?.split('@')[0] || 'Anonymous';
-        return `
-          <div class="comment-item">
-            <div class="comment-avatar" style="background:${getColor(name)};">${getInitials(name)}</div>
-            <div class="comment-body">
-              <div class="comment-user">${escapeHTML(name)} <span>${timeAgo(c.created_at)}</span></div>
-              <div class="comment-text">${escapeHTML(c.content)}</div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    async function toggleBlur(e) {
-      const btn = e.currentTarget;
-      const postId = Number(btn.dataset.id);
-      const postIndex = posts.findIndex(p => p.id === postId);
-      if (postIndex === -1) return;
-      const post = posts[postIndex];
-      const newBlur = !post.blurred;
-
-      post.blurred = newBlur;
-      updatePostUI(postId, newBlur);
-
-      try {
-        const { error } = await supabase
-          .from('posts')
-          .update({ blurred: newBlur })
-          .eq('id', postId);
-        if (error) throw error;
-      } catch (err) {
-        console.error('Toggle blur error:', err);
-        post.blurred = !newBlur;
-        updatePostUI(postId, !newBlur);
-        alert('Failed to toggle blur. Please try again.');
-      }
-    }
-
-    function updatePostUI(postId, blurred) {
-      const postCard = document.getElementById(`post-${postId}`);
-      if (!postCard) return;
-      const wrapper = document.getElementById(`mediaWrapper-${postId}`);
-      if (wrapper) {
-        wrapper.classList.toggle('blurred', blurred);
-        let badge = wrapper.querySelector('.blur-badge');
-        if (blurred) {
-          if (!badge) {
-            badge = document.createElement('div');
-            badge.className = 'blur-badge';
-            badge.innerHTML = '<i class="fas fa-eye-slash"></i> Blurred';
-            wrapper.appendChild(badge);
+      // ==============================================================
+      // UPLOAD VISIBILITY
+      // ==============================================================
+      function updateUploadVisibility() {
+        const username = usernameInput.value.trim();
+        const hasUsername = username.length > 0;
+        if (hasUsername) {
+          uploadRow.classList.add('visible');
+          const role = getRole(username);
+          if (role === 'admin') {
+            mediaFileInput.removeAttribute('accept');
+            fileLabelText.textContent = 'Upload Any File';
+            uploadHint.textContent = 'Admin: all file types allowed';
+          } else {
+            mediaFileInput.accept = 'image/*';
+            fileLabelText.textContent = 'Choose Image';
+            uploadHint.textContent = 'Images only';
           }
         } else {
-          if (badge) badge.remove();
-        }
-      }
-      const toggleBtn = postCard.querySelector('.blur-toggle');
-      if (toggleBtn) {
-        const icon = toggleBtn.querySelector('i');
-        icon.className = blurred ? 'fas fa-eye' : 'fas fa-eye-slash';
-      }
-      const updatedPost = posts.find(p => p.id === postId);
-      if (updatedPost) {
-        const tintInfo = getPostTint(updatedPost, posts);
-        postCard.className = postCard.className.split(' ').filter(c => !c.startsWith('tint-')).join(' ');
-        postCard.classList.add('tint-' + tintInfo.tint);
-        const badgeSpan = postCard.querySelector('.tint-badge');
-        if (badgeSpan) {
-          badgeSpan.textContent = `${tintInfo.emoji} ${tintInfo.badge}`;
-          badgeSpan.className = `tint-badge ${tintInfo.tint}`;
-        }
-      }
-    }
-
-    async function toggleComments(e) {
-      const btn = e.currentTarget;
-      const postId = Number(btn.dataset.id);
-      const section = document.getElementById(`comments-${postId}`);
-      if (!section) return;
-      const isOpen = section.classList.toggle('open');
-      if (isOpen) {
-        openComments.add(postId);
-        const input = document.getElementById(`commentInput-${postId}`);
-        if (input) input.focus();
-        if (!commentsMap.has(postId) || commentsMap.get(postId).length === 0) {
-          await fetchComments([postId]);
-          const list = document.getElementById(`commentList-${postId}`);
-          if (list) {
-            list.innerHTML = renderComments(postId);
-            const countSpan = btn.querySelector('.comment-count');
-            if (countSpan) countSpan.textContent = commentsMap.get(postId).length;
-          }
-        }
-      } else {
-        openComments.delete(postId);
-      }
-    }
-
-    async function handleCommentSubmit(e) {
-      const btn = e.currentTarget;
-      const postId = Number(btn.dataset.post);
-      const input = document.getElementById(`commentInput-${postId}`);
-      const content = input.value.trim();
-      if (!content) { input.focus(); input.style.borderColor = '#f87171'; setTimeout(() => input.style.borderColor = '', 1500); return; }
-      btn.disabled = true;
-      btn.textContent = 'Sending...';
-      try {
-        const newComment = {
-          post_id: postId,
-          user_email: currentUser?.email || 'user_' + Math.floor(Math.random()*10000) + '@pulse.local',
-          content
-        };
-        const { data, error } = await supabase.from('comments').insert([newComment]).select();
-        if (error) throw error;
-        if (data?.length) {
-          if (!commentsMap.has(postId)) commentsMap.set(postId, []);
-          commentsMap.get(postId).push(data[0]);
-          const list = document.getElementById(`commentList-${postId}`);
-          if (list) list.innerHTML = renderComments(postId);
-          const toggleBtn = document.querySelector(`.comment-toggle[data-id="${postId}"]`);
-          if (toggleBtn) {
-            const countSpan = toggleBtn.querySelector('.comment-count');
-            if (countSpan) countSpan.textContent = commentsMap.get(postId).length;
-          }
-          input.value = '';
-        }
-      } catch (err) { console.error(err); alert('Comment failed'); }
-      finally { btn.disabled = false; btn.textContent = 'Reply'; }
-    }
-
-    async function handleLike(e) {
-      const btn = e.currentTarget;
-      const postId = btn.dataset.id;
-      const span = btn.querySelector('.like-count');
-      const icon = btn.querySelector('i');
-      const cur = parseInt(span.textContent) || 0;
-      const isLiked = btn.classList.toggle('liked');
-      const newVal = isLiked ? cur + 1 : cur - 1;
-      span.textContent = newVal;
-      icon.className = isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
-      const idx = posts.findIndex(p => String(p.id) === String(postId));
-      if (idx !== -1) posts[idx].likes_count = newVal;
-      try {
-        const { error } = await supabase.from('posts').update({ likes_count: newVal }).eq('id', postId);
-        if (error) throw error;
-      } catch (err) { console.error(err); }
-    }
-
-    async function handleBookmark(e) {
-      const btn = e.currentTarget;
-      const postId = btn.dataset.id;
-      const span = btn.querySelector('.bookmark-count');
-      const icon = btn.querySelector('i');
-      const cur = parseInt(span.textContent) || 0;
-      const isBookmarked = btn.classList.toggle('bookmarked');
-      const newVal = isBookmarked ? cur + 1 : cur - 1;
-      span.textContent = newVal;
-      icon.className = isBookmarked ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';
-      const idx = posts.findIndex(p => String(p.id) === String(postId));
-      if (idx !== -1) posts[idx].bookmarks_count = newVal;
-      try {
-        const { error } = await supabase.from('posts').update({ bookmarks_count: newVal }).eq('id', postId);
-        if (error) throw error;
-      } catch (err) { console.error(err); }
-    }
-
-    // ==============================================================
-    // Pagination, search, sort, init
-    // ==============================================================
-    async function loadPosts(cursor = null) {
-      if (!hasMore) return;
-      addSkeleton();
-      loadMoreBtn.disabled = true;
-      let query = supabase.from('posts').select('*').order('id', { ascending: false }).limit(PAGE_SIZE);
-      if (cursor) query = query.lt('id', cursor);
-      const { data, error } = await query;
-      removeSkeleton();
-      loadMoreBtn.disabled = false;
-      if (error) { console.error(error); return; }
-      if (data.length < PAGE_SIZE) hasMore = false;
-      if (!data.length) { updateLoadMoreUI(); return; }
-      const newPosts = data;
-      posts = posts.concat(newPosts);
-      const ids = newPosts.map(p => p.id);
-      await fetchComments(ids);
-      renderPosts(newPosts, true);
-      lastId = newPosts[newPosts.length - 1].id;
-      updateLoadMoreUI();
-    }
-
-    function updateLoadMoreUI() {
-      if (hasMore && posts.length && !searchTerm) loadMoreBtn.style.display = 'inline-block';
-      else loadMoreBtn.style.display = 'none';
-    }
-
-    function addSkeleton() {
-      feed.insertAdjacentHTML('beforeend', `<div class="skeleton"><div class="line short"></div><div class="line long"></div><div class="line long" style="width:80%;"></div><div class="line short" style="width:30%;"></div></div>`);
-    }
-    function removeSkeleton() {
-      const sk = feed.querySelector('.skeleton:last-child');
-      if (sk) sk.remove();
-    }
-    function showSkeletons(n=3) {
-      feed.innerHTML = Array(n).fill(0).map(() =>
-        `<div class="skeleton"><div class="line short"></div><div class="line long"></div><div class="line long" style="width:80%;"></div><div class="line short" style="width:30%;"></div></div>`
-      ).join('');
-    }
-
-    async function initFeed() {
-      showSkeletons(3);
-      loadMoreBtn.style.display = 'none';
-      try {
-        await trackVisitor();
-        await fetchStats();
-
-        const { data, error } = await supabase.from('posts').select('*').order('id', { ascending: false }).limit(PAGE_SIZE);
-        if (error) throw error;
-        if (data.length < PAGE_SIZE) hasMore = false;
-        posts = data || [];
-        const ids = posts.map(p => p.id);
-        if (ids.length) await fetchComments(ids);
-        renderPosts(posts, false);
-        if (data.length) lastId = data[data.length-1].id;
-        updateLoadMoreUI();
-        requestNotify();
-
-        setInterval(fetchStats, 30000);
-      } catch (err) {
-        console.error(err);
-        feed.innerHTML = '<div class="empty-state" style="color:#f87171;"><i class="fas fa-circle-exclamation"></i><p>Failed to load feed</p></div>';
-      }
-    }
-
-    let searchTimeout;
-    searchInput.addEventListener('input', function() {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => {
-        const term = this.value.trim().toLowerCase();
-        searchTerm = term;
-        if (!term) { renderPosts(posts, false); updateLoadMoreUI(); return; }
-        const filtered = posts.filter(p => (p.content || '').toLowerCase().includes(term) || (p.title || '').toLowerCase().includes(term));
-        renderPosts(filtered, false);
-        loadMoreBtn.style.display = 'none';
-      }, 300);
-    });
-
-    function applySort(type) {
-      currentSort = type;
-      let arr = searchTerm ? posts.filter(p => (p.content || '').toLowerCase().includes(searchTerm) || (p.title || '').toLowerCase().includes(searchTerm)) : [...posts];
-      if (type === 'trending') arr.sort((a,b) => (b.likes_count||0) - (a.likes_count||0));
-      else if (type === 'random') arr.sort(() => Math.random() - 0.5);
-      else arr.sort((a,b) => b.id - a.id);
-      renderPosts(arr, false);
-      if (searchTerm) loadMoreBtn.style.display = 'none';
-      else updateLoadMoreUI();
-    }
-    sortSelect.addEventListener('change', e => applySort(e.target.value));
-
-    async function createPost() {
-      if (isSubmitting) return;
-      const title = titleInput.value.trim();
-      const username = usernameInput.value.trim();
-      const content = postInput.value.trim();
-      const blurred = blurToggle.checked;
-
-      if (!content) { postInput.focus(); postInput.style.borderColor = '#f87171'; setTimeout(() => postInput.style.borderColor = '', 1500); return; }
-
-      isSubmitting = true;
-      publishBtn.disabled = true;
-      publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-
-      try {
-        let mediaUrl = null;
-        if (username.length > 0 && selectedFile) {
-          mediaUrl = await uploadFile(selectedFile);
-          if (!mediaUrl) {
-            alert('Failed to upload file. Please try again.');
-            isSubmitting = false;
-            publishBtn.disabled = false;
-            publishBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publish';
-            return;
-          }
-        }
-
-        const tags = extractHashtags(content);
-        const newPost = {
-          title: title || null,
-          username: username || null,
-          content: content,
-          user_email: currentUser?.email || 'user_' + Math.floor(Math.random()*10000) + '@pulse.local',
-          likes_count: 0,
-          bookmarks_count: 0,
-          tags: tags.length ? tags : null,
-          image_url: mediaUrl,
-          blurred: blurred && mediaUrl ? blurred : false
-        };
-        const { data, error } = await supabase.from('posts').insert([newPost]).select();
-        if (error) throw error;
-        if (data?.length) {
-          posts.unshift(data[0]);
-          commentsMap.set(data[0].id, []);
-          renderPosts(posts, false);
-          fireConfetti();
-          titleInput.value = '';
-          usernameInput.value = '';
-          postInput.value = '';
+          uploadRow.classList.remove('visible');
           mediaFileInput.value = '';
           selectedFile = null;
           imagePreview.style.display = 'none';
-          blurToggle.checked = false;
-          updateUploadVisibility();
-          notifyNew(content);
-          fetchStats();
+          uploadHint.textContent = '';
         }
-      } catch (err) {
-        console.error(err);
-        alert('Publish failed: ' + err.message);
-      } finally {
-        isSubmitting = false;
-        publishBtn.disabled = false;
-        publishBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publish';
       }
-    }
+      usernameInput.addEventListener('input', updateUploadVisibility);
+      updateUploadVisibility();
 
-    publishBtn.addEventListener('click', createPost);
-    postInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); createPost(); } });
+      mediaFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          selectedFile = file;
+          if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (ev) => { imagePreview.src = ev.target.result; imagePreview.style.display = 'block'; };
+            reader.readAsDataURL(file);
+          } else {
+            imagePreview.style.display = 'none';
+            fileLabelText.textContent = file.name;
+          }
+        } else {
+          selectedFile = null;
+          imagePreview.style.display = 'none';
+        }
+      });
 
-    loadMoreBtn.addEventListener('click', async () => {
-      if (!hasMore) return;
-      loadingMore.style.display = 'block';
-      loadMoreBtn.style.display = 'none';
-      await loadPosts(lastId);
-      loadingMore.style.display = 'none';
-      updateLoadMoreUI();
-    });
-
-    document.addEventListener('keydown', e => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); searchInput.focus(); }
-      if (e.key === '?' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); document.getElementById('shortcutsModal').classList.toggle('open'); }
-      if (e.key === 'Escape') {
-        const modal = document.getElementById('shortcutsModal');
-        if (modal.classList.contains('open')) modal.classList.remove('open');
-        else if (document.activeElement === searchInput) searchInput.blur();
+      // ==============================================================
+      // STATS
+      // ==============================================================
+      function getVisitorId() {
+        let id = localStorage.getItem('pulse_visitor');
+        if (!id) {
+          id = crypto.randomUUID ? crypto.randomUUID() : 'visitor_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+          localStorage.setItem('pulse_visitor', id);
+        }
+        return id;
       }
-      if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.target.closest('input,textarea,select')) {
-        e.preventDefault(); titleInput.focus();
+      async function trackVisitor() {
+        const visitorId = getVisitorId();
+        try {
+          const { error } = await supabase
+            .from('visitors')
+            .upsert({ visitor_id: visitorId, last_seen: new Date().toISOString() }, { onConflict: 'visitor_id' });
+          if (error) console.error('Visitor tracking error:', error);
+        } catch (e) { console.error('Visitor tracking error:', e); }
       }
-    });
-    document.getElementById('modalCloseBtn').addEventListener('click', () => document.getElementById('shortcutsModal').classList.remove('open'));
-    document.getElementById('shortcutsModal').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+      async function fetchStats() {
+        try {
+          const { count: postsCount } = await supabase.from('posts').select('*', { count: 'exact', head: true });
+          const { count: repliesCount } = await supabase.from('comments').select('*', { count: 'exact', head: true });
+          const { data: usernames } = await supabase.from('posts').select('username');
+          const adminSet = new Set(), modSet = new Set(), botSet = new Set();
+          usernames.forEach(row => {
+            if (row.username) {
+              const r = getRole(row.username);
+              if (r === 'admin') adminSet.add(row.username);
+              else if (r === 'mod') modSet.add(row.username);
+              else if (r === 'bot') botSet.add(row.username);
+            }
+          });
+          const { data: emails } = await supabase.from('posts').select('user_email');
+          const distinctEmails = new Set();
+          emails.forEach(row => { if (row.user_email) distinctEmails.add(row.user_email); });
+          const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+          const { count: onlineCount } = await supabase.from('visitors').select('*', { count: 'exact', head: true }).gte('last_seen', fiveMinAgo);
+          const { data: visitorData } = await supabase.from('visitors').select('visitor_id');
+          const totalVisitors = new Set(visitorData.map(row => row.visitor_id)).size;
 
-    function subscribe() {
-      supabase.channel('public:posts')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, payload => {
-          const p = payload.new;
-          if (posts.some(po => po.id === p.id)) return;
-          posts.unshift(p);
-          commentsMap.set(p.id, []);
-          if (!searchTerm && currentSort === 'new') renderPosts(posts, false);
-          updateLoadMoreUI();
-          notifyNew(p.content || '');
-          fetchStats();
-        })
-        .subscribe();
-      supabase.channel('public:comments')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments' }, payload => {
-          const c = payload.new;
-          const pid = c.post_id;
-          if (commentsMap.has(pid)) {
-            commentsMap.get(pid).push(c);
-            const list = document.getElementById(`commentList-${pid}`);
-            if (list) list.innerHTML = renderComments(pid);
-            const toggle = document.querySelector(`.comment-toggle[data-id="${pid}"]`);
-            if (toggle) {
-              const cs = toggle.querySelector('.comment-count');
-              if (cs) cs.textContent = commentsMap.get(pid).length;
+          statPosts.textContent = postsCount || 0;
+          statReplies.textContent = repliesCount || 0;
+          statAdmins.textContent = adminSet.size || 0;
+          statMods.textContent = modSet.size || 0;
+          statBots.textContent = botSet.size || 0;
+          statUsers.textContent = distinctEmails.size || 0;
+          statOnline.textContent = onlineCount || 0;
+          statVisitors.textContent = totalVisitors || 0;
+          document.getElementById('marqueeActive').textContent = onlineCount || 0;
+          document.getElementById('marqueeAdmins').textContent = adminSet.size || 0;
+        } catch (err) { console.error('Stats fetch error:', err); }
+      }
+
+      // ==============================================================
+      // COMMENTS
+      // ==============================================================
+      async function fetchComments(postIds) {
+        if (!postIds?.length) return;
+        const { data, error } = await supabase.from('comments').select('*').in('post_id', postIds).order('created_at', { ascending: true });
+        if (error) { console.error(error); return; }
+        const grouped = {};
+        data.forEach(c => { if (!grouped[c.post_id]) grouped[c.post_id] = []; grouped[c.post_id].push(c); });
+        postIds.forEach(id => commentsMap.set(id, grouped[id] || []));
+      }
+      function renderComments(postId) {
+        const comments = commentsMap.get(postId) || [];
+        if (!comments.length) return '<div style="color:#64748b;font-size:0.85rem;padding:0.25rem 0;">No replies yet.</div>';
+        return comments.map(c => {
+          const name = c.user_email?.split('@')[0] || 'Anonymous';
+          return `
+            <div class="comment-item">
+              <div class="comment-avatar" style="background:${getColor(name)};">${getInitials(name)}</div>
+              <div class="comment-body">
+                <div class="comment-user">${escapeHTML(name)} <span>${timeAgo(c.created_at)}</span></div>
+                <div class="comment-text">${escapeHTML(c.content)}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      async function toggleComments(e) {
+        const btn = e.currentTarget;
+        const postId = Number(btn.dataset.id);
+        const section = document.getElementById(`comments-${postId}`);
+        if (!section) return;
+        const isOpen = section.classList.toggle('open');
+        if (isOpen) {
+          openComments.add(postId);
+          const input = document.getElementById(`commentInput-${postId}`);
+          if (input) input.focus();
+          if (!commentsMap.has(postId) || commentsMap.get(postId).length === 0) {
+            await fetchComments([postId]);
+            const list = document.getElementById(`commentList-${postId}`);
+            if (list) {
+              list.innerHTML = renderComments(postId);
+              const countSpan = btn.querySelector('.comment-count');
+              if (countSpan) countSpan.textContent = commentsMap.get(postId).length;
             }
           }
-          fetchStats();
-        })
-        .subscribe();
-    }
-
-    // ==============================================================
-    // Support embed script (unchanged)
-    // ==============================================================
-    (function() {
-      var btn = document.getElementById('showWidgetBtn');
-      var widgetDiv = document.getElementById('widgetContainer');
-      var closeBtn = document.getElementById('closeWidgetBtn');
-
-      if (btn && widgetDiv) {
-        btn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          if (widgetDiv.style.display === 'none' || widgetDiv.style.display === '') {
-            widgetDiv.style.display = 'block';
-          } else {
-            widgetDiv.style.display = 'none';
+        } else {
+          openComments.delete(postId);
+        }
+      }
+      async function handleCommentSubmit(e) {
+        const btn = e.currentTarget;
+        const postId = Number(btn.dataset.post);
+        const input = document.getElementById(`commentInput-${postId}`);
+        const content = input.value.trim();
+        if (!content) { input.focus(); input.style.borderColor = '#f87171'; setTimeout(() => input.style.borderColor = '', 1500); return; }
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
+        try {
+          const newComment = {
+            post_id: postId,
+            user_email: currentUser?.email || 'user_' + Math.floor(Math.random()*10000) + '@pulse.local',
+            content
+          };
+          const { data, error } = await supabase.from('comments').insert([newComment]).select();
+          if (error) throw error;
+          if (data?.length) {
+            if (!commentsMap.has(postId)) commentsMap.set(postId, []);
+            commentsMap.get(postId).push(data[0]);
+            const list = document.getElementById(`commentList-${postId}`);
+            if (list) list.innerHTML = renderComments(postId);
+            const toggleBtn = document.querySelector(`.comment-toggle[data-id="${postId}"]`);
+            if (toggleBtn) {
+              const countSpan = toggleBtn.querySelector('.comment-count');
+              if (countSpan) countSpan.textContent = commentsMap.get(postId).length;
+            }
+            input.value = '';
           }
+        } catch (err) { console.error(err); alert('Comment failed'); }
+        finally { btn.disabled = false; btn.textContent = 'Reply'; }
+      }
+
+      // ==============================================================
+      // LIGHTBOX
+      // ==============================================================
+      function openLightbox(src) {
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('lightbox').classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('open');
+        document.body.style.overflow = 'auto';
+      }
+      window.openLightbox = openLightbox;
+      window.closeLightbox = closeLightbox;
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+      // ==============================================================
+      // RENDER POSTS – ALL POSTS ARE EDITABLE & DELETABLE + VIEW TRACKING
+      // ==============================================================
+      function renderPosts(postData, append = false) {
+        if (!postData?.length) {
+          if (!append) feed.innerHTML = '<div class="empty-state"><i class="fas fa-feather-pointed"></i><p>No posts yet. Be the first to shine! ✨</p></div>';
+          return;
+        }
+        let html = '';
+        const now = Date.now();
+        postData.forEach(post => {
+          const username = post.username || '';
+          const displayName = username || 'Anonymous';
+          const initials = getInitials(displayName);
+          const color = getColor(displayName);
+          const likeCount = post.likes_count || 0;
+          const bookmarksCount = post.bookmarks_count || 0;
+          const viewsCount = post.views_count || 0;
+          const tags = post.tags || [];
+          const isNew = (now - new Date(post.created_at).getTime()) < 3600000;
+          const commentCount = commentsMap.get(post.id)?.length || 0;
+          const isOpen = openComments.has(post.id);
+          const title = post.title || '';
+          const membersOnly = post.members_only || false;
+          const subscribersOnly = post.subscribers_only || false;
+
+          const role = getRole(username);
+          const roleClass = 'role-' + role;
+          const badgeHtml = getRoleBadge(role);
+
+          const isLocked = post.password_hash && !localStorage.getItem(`unlocked_${post.id}`);
+          const isAgeGated = post.age_required && !localStorage.getItem(`age_verified_${post.id}`);
+          const showContent = (!post.password_hash || localStorage.getItem(`unlocked_${post.id}`) === 'true') &&
+                              (!post.age_required || localStorage.getItem(`age_verified_${post.id}`) === 'true');
+
+          let content = DOMPurify.sanitize(post.content || '', { ALLOWED_TAGS: ['b','i','u','a','br','p','em','strong'] });
+          content = content.replace(/#(\w+)/g, '<span class="hashtag">#$1</span>');
+
+          let mediaHtml = '';
+          if (post.image_url) {
+            const url = post.image_url;
+            const ext = url.split('.').pop().toLowerCase();
+            const isVideo = ['mp4','webm','ogv','mov','avi','mkv','m4v','wmv','flv'].includes(ext);
+            const isAudio = ['mp3','wav','ogg','aac','flac'].includes(ext);
+            const blurClass = post.blurred ? 'blurred' : '';
+            if (isVideo) {
+              mediaHtml = `
+                <div class="post-image-wrapper ${blurClass}" id="mediaWrapper-${post.id}" onclick="event.stopPropagation();">
+                  <video controls src="${escapeHTML(url)}" onerror="this.style.display='none'"></video>
+                  ${post.blurred ? `<div class="blur-badge"><i class="fas fa-eye-slash"></i> Blurred</div>` : ''}
+                </div>
+              `;
+            } else if (isAudio) {
+              mediaHtml = `
+                <div class="post-image-wrapper" id="mediaWrapper-${post.id}">
+                  <audio controls src="${escapeHTML(url)}" style="width:100%;"></audio>
+                  ${post.blurred ? `<div class="blur-badge"><i class="fas fa-eye-slash"></i> Blurred</div>` : ''}
+                </div>
+              `;
+            } else {
+              mediaHtml = `
+                <div class="post-image-wrapper ${blurClass}" id="mediaWrapper-${post.id}" onclick="openLightbox('${escapeHTML(url)}')">
+                  <img src="${escapeHTML(url)}" alt="Post media" loading="lazy" onerror="this.style.display='none'" />
+                  ${post.blurred ? `<div class="blur-badge"><i class="fas fa-eye-slash"></i> Blurred</div>` : ''}
+                </div>
+              `;
+            }
+          }
+
+          html += `
+            <div class="post-card ${roleClass}" data-id="${post.id}" id="post-${post.id}">
+              ${isLocked ? `
+                <div class="lock-overlay">
+                  <i class="fas fa-lock"></i>
+                  <p>This post is password locked.</p>
+                  <input type="password" id="pass-${post.id}" placeholder="Enter password" />
+                  <button class="unlock-btn" onclick="unlockPost('${post.id}')">Unlock</button>
+                  <div id="pass-error-${post.id}" class="lock-error"></div>
+                </div>
+              ` : ''}
+              ${isAgeGated && !isLocked ? `
+                <div class="age-overlay">
+                  <i class="fas fa-shield-alt"></i>
+                  <p>Age verification required (18+)</p>
+                  <input type="number" id="age-${post.id}" placeholder="Your age" />
+                  <button class="unlock-btn" onclick="verifyAge('${post.id}')">Verify</button>
+                  <div id="age-error-${post.id}" class="lock-error"></div>
+                </div>
+              ` : ''}
+
+              <div class="post-header">
+                <div class="avatar" style="background:${color};">${initials}</div>
+                <div class="post-user">
+                  <span class="name">${escapeHTML(displayName)}</span>
+                  <span>· ${post.user_email || 'anon'}</span>
+                  ${badgeHtml}
+                  ${membersOnly ? '<span class="members-badge"><i class="fas fa-lock"></i> Members</span>' : ''}
+                  ${subscribersOnly ? '<span class="subscribers-badge"><i class="fas fa-crown"></i> Subscribers</span>' : ''}
+                  ${isNew ? '<span class="badge-new">New</span>' : ''}
+                </div>
+                <div class="post-time">${timeAgo(post.created_at)}</div>
+              </div>
+              ${title ? `<div class="post-title">${escapeHTML(title)}</div>` : ''}
+              ${showContent ? `<div class="post-content" contenteditable="true" data-id="${post.id}">${content}</div>` :
+                `<div class="post-content" style="opacity:0.3;filter:blur(4px);pointer-events:none;">${escapeHTML(post.content || '').substring(0,100)}...</div>`}
+              ${tags.length ? `<div class="post-tags">${tags.map(t => `<span class="tag-pill">#${escapeHTML(t)}</span>`).join('')}</div>` : ''}
+              ${showContent ? mediaHtml : (post.image_url ? `<div style="filter:blur(20px);">${mediaHtml}</div>` : '')}
+              <div class="post-footer">
+                <button class="like-btn" data-id="${post.id}">
+                  <i class="fa-regular fa-heart"></i> <span class="like-count">${likeCount}</span>
+                </button>
+                <button class="bookmark-btn" data-id="${post.id}">
+                  <i class="fa-regular fa-bookmark"></i> <span class="bookmark-count">${bookmarksCount}</span>
+                </button>
+                <span class="view-count"><i class="fas fa-eye"></i> <span data-id="${post.id}">${viewsCount}</span></span>
+                ${post.image_url ? `<button class="blur-toggle" data-id="${post.id}" title="Toggle Blur">
+                  <i class="fas ${post.blurred ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                </button>` : ''}
+                <button class="comment-toggle" data-id="${post.id}">
+                  <i class="fa-regular fa-comment"></i> <span class="comment-count">${commentCount}</span>
+                </button>
+                <button class="delete-btn" data-id="${post.id}" title="Delete"><i class="fas fa-trash"></i></button>
+              </div>
+              <div class="comments-section ${isOpen ? 'open' : ''}" id="comments-${post.id}">
+                <div id="commentList-${post.id}">${renderComments(post.id)}</div>
+                <div class="comment-form">
+                  <input type="text" placeholder="Write a reply..." id="commentInput-${post.id}" />
+                  <button data-post="${post.id}" class="comment-submit">Reply</button>
+                </div>
+              </div>
+            </div>
+          `;
         });
 
-        if (closeBtn) {
-          closeBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            widgetDiv.style.display = 'none';
-          });
-        }
+        if (append) feed.insertAdjacentHTML('beforeend', html);
+        else feed.innerHTML = html;
 
-        document.addEventListener('click', function(event) {
-          var container = document.getElementById('tipButtonContainer');
-          if (container && !container.contains(event.target)) {
-            widgetDiv.style.display = 'none';
+        feed.querySelectorAll('.like-btn').forEach(b => b.addEventListener('click', handleLike));
+        feed.querySelectorAll('.bookmark-btn').forEach(b => b.addEventListener('click', handleBookmark));
+        feed.querySelectorAll('.blur-toggle').forEach(b => b.addEventListener('click', toggleBlur));
+        feed.querySelectorAll('.comment-toggle').forEach(b => b.addEventListener('click', toggleComments));
+        feed.querySelectorAll('.comment-submit').forEach(b => b.addEventListener('click', handleCommentSubmit));
+        feed.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', handleDelete));
+        feed.querySelectorAll('.comment-form input').forEach(i => i.addEventListener('keydown', e => {
+          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); i.parentElement.querySelector('.comment-submit')?.click(); }
+        }));
+        feed.querySelectorAll('.post-content').forEach(el => {
+          el.removeEventListener('blur', saveEdit);
+          el.addEventListener('blur', saveEdit);
+          el.removeEventListener('keydown', handleEditKeydown);
+          el.addEventListener('keydown', handleEditKeydown);
+        });
+
+        // Increment views for each post in this batch (only if not viewed yet)
+        postData.forEach(post => {
+          if (!viewedPosts.has(post.id)) {
+            incrementView(post.id);
           }
         });
       }
+
+      // ==============================================================
+      // UNLOCK / AGE
+      // ==============================================================
+      window.unlockPost = async function(postId) {
+        const input = document.getElementById(`pass-${postId}`);
+        const errorSpan = document.getElementById(`pass-error-${postId}`);
+        const entered = input.value;
+        if (!entered) { errorSpan.textContent = 'Enter a password.'; return; }
+        const { data, error } = await supabase.from('posts').select('password_hash').eq('id', postId).single();
+        if (error) { errorSpan.textContent = 'Error fetching password.'; return; }
+        const enteredHash = await sha256(entered);
+        if (enteredHash === data.password_hash) {
+          localStorage.setItem(`unlocked_${postId}`, 'true');
+          loadFeed();
+        } else {
+          errorSpan.textContent = 'Incorrect password.';
+        }
+      };
+      window.verifyAge = function(postId) {
+        const input = document.getElementById(`age-${postId}`);
+        const errorSpan = document.getElementById(`age-error-${postId}`);
+        const age = parseInt(input.value);
+        if (isNaN(age) || age < 18) { errorSpan.textContent = 'You must be 18 or older.'; return; }
+        localStorage.setItem(`age_verified_${postId}`, 'true');
+        loadFeed();
+      };
+
+      // ==============================================================
+      // EDIT / DELETE – no ownership checks
+      // ==============================================================
+      function saveEdit(e) {
+        const el = e.currentTarget;
+        const postId = el.dataset.id;
+        const newContent = el.innerText.trim();
+        if (!newContent) return;
+        const postIndex = posts.findIndex(p => String(p.id) === String(postId));
+        if (postIndex === -1) return;
+        const oldContent = posts[postIndex].content;
+        if (newContent === oldContent) return;
+        posts[postIndex].content = newContent;
+        const tags = extractHashtags(newContent);
+        posts[postIndex].tags = tags;
+        el.innerHTML = DOMPurify.sanitize(newContent, { ALLOWED_TAGS: ['b','i','u','a','br','p','em','strong'] })
+                           .replace(/#(\w+)/g, '<span class="hashtag">#$1</span>');
+        const card = el.closest('.post-card');
+        const oldTags = card.querySelector('.post-tags');
+        if (oldTags) oldTags.remove();
+        if (tags.length) {
+          const tagsDiv = document.createElement('div');
+          tagsDiv.className = 'post-tags';
+          tagsDiv.innerHTML = tags.map(t => `<span class="tag-pill">#${escapeHTML(t)}</span>`).join('');
+          el.insertAdjacentElement('afterend', tagsDiv);
+        }
+        supabase.from('posts').update({ content: newContent, tags: tags }).eq('id', postId)
+          .then(({ error }) => { if (error) console.error('Edit error:', error); })
+          .catch(console.error);
+      }
+      function handleEditKeydown(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.currentTarget.blur(); }
+        if (e.key === 'Escape') { e.currentTarget.blur(); }
+      }
+      async function handleDelete(e) {
+        const btn = e.currentTarget;
+        const postId = btn.dataset.id;
+        if (!confirm('Delete this post?')) return;
+        try {
+          const { error } = await supabase.from('posts').delete().eq('id', postId);
+          if (error) throw error;
+          posts = posts.filter(p => String(p.id) !== String(postId));
+          renderPosts(posts, false);
+          fetchStats();
+        } catch (err) { console.error('Delete error:', err); alert('Failed to delete post.'); }
+      }
+
+      // ==============================================================
+      // LIKE / BOOKMARK / BLUR
+      // ==============================================================
+      async function handleLike(e) {
+        const btn = e.currentTarget;
+        const postId = btn.dataset.id;
+        const span = btn.querySelector('.like-count');
+        const icon = btn.querySelector('i');
+        const cur = parseInt(span.textContent) || 0;
+        const isLiked = btn.classList.toggle('liked');
+        const newVal = isLiked ? cur + 1 : cur - 1;
+        span.textContent = newVal;
+        icon.className = isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+        const idx = posts.findIndex(p => String(p.id) === String(postId));
+        if (idx !== -1) posts[idx].likes_count = newVal;
+        try { await supabase.from('posts').update({ likes_count: newVal }).eq('id', postId); }
+        catch (err) { console.error(err); }
+      }
+      async function handleBookmark(e) {
+        const btn = e.currentTarget;
+        const postId = btn.dataset.id;
+        const span = btn.querySelector('.bookmark-count');
+        const icon = btn.querySelector('i');
+        const cur = parseInt(span.textContent) || 0;
+        const isBookmarked = btn.classList.toggle('bookmarked');
+        const newVal = isBookmarked ? cur + 1 : cur - 1;
+        span.textContent = newVal;
+        icon.className = isBookmarked ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';
+        const idx = posts.findIndex(p => String(p.id) === String(postId));
+        if (idx !== -1) posts[idx].bookmarks_count = newVal;
+        try { await supabase.from('posts').update({ bookmarks_count: newVal }).eq('id', postId); }
+        catch (err) { console.error(err); }
+      }
+      async function toggleBlur(e) {
+        const btn = e.currentTarget;
+        const postId = Number(btn.dataset.id);
+        const postIndex = posts.findIndex(p => p.id === postId);
+        if (postIndex === -1) return;
+        const post = posts[postIndex];
+        const newBlur = !post.blurred;
+        post.blurred = newBlur;
+        updatePostUI(postId, newBlur);
+        try { await supabase.from('posts').update({ blurred: newBlur }).eq('id', postId); }
+        catch (err) { console.error('Toggle blur error:', err); post.blurred = !newBlur; updatePostUI(postId, !newBlur); alert('Failed to toggle blur.'); }
+      }
+      function updatePostUI(postId, blurred) {
+        const postCard = document.getElementById(`post-${postId}`);
+        if (!postCard) return;
+        const wrapper = document.getElementById(`mediaWrapper-${postId}`);
+        if (wrapper) {
+          wrapper.classList.toggle('blurred', blurred);
+          let badge = wrapper.querySelector('.blur-badge');
+          if (blurred) {
+            if (!badge) {
+              badge = document.createElement('div');
+              badge.className = 'blur-badge';
+              badge.innerHTML = '<i class="fas fa-eye-slash"></i> Blurred';
+              wrapper.appendChild(badge);
+            }
+          } else {
+            if (badge) badge.remove();
+          }
+        }
+        const toggleBtn = postCard.querySelector('.blur-toggle');
+        if (toggleBtn) {
+          const icon = toggleBtn.querySelector('i');
+          icon.className = blurred ? 'fas fa-eye' : 'fas fa-eye-slash';
+        }
+      }
+
+      // ==============================================================
+      // FILTERS & LOAD FEED
+      // ==============================================================
+      function applyFilters() { resetFeed(); }
+
+      tagFilterSelect.addEventListener('change', function() {
+        activeTag = this.value || null;
+        resetFeed();
+      });
+
+      membersToggleBtn.addEventListener('click', function() {
+        membersFilter = !membersFilter;
+        this.classList.toggle('active');
+        resetFeed();
+      });
+
+      subscribersToggleBtn.addEventListener('click', function() {
+        subscribersFilter = !subscribersFilter;
+        this.classList.toggle('active');
+        resetFeed();
+      });
+
+      function resetFeed() {
+        posts = [];
+        lastId = null;
+        hasMore = true;
+        loadFeed();
+      }
+
+      async function loadFeed() {
+        showSkeletons(3);
+        loadMoreBtn.style.display = 'none';
+        try {
+          await trackVisitor();
+          await fetchStats();
+
+          let query = supabase
+            .from('posts')
+            .select('*')
+            .order('id', { ascending: false })
+            .limit(PAGE_SIZE);
+
+          if (activeTag) query = query.contains('tags', [activeTag]);
+          if (membersFilter && subscribersFilter) {
+            query = query.or(`members_only.eq.true,subscribers_only.eq.true`);
+          } else if (membersFilter) {
+            query = query.eq('members_only', true);
+          } else if (subscribersFilter) {
+            query = query.eq('subscribers_only', true);
+          }
+
+          const { data, error } = await query;
+          if (error) throw error;
+          if (data.length < PAGE_SIZE) hasMore = false;
+          posts = data || [];
+          const ids = posts.map(p => p.id);
+          if (ids.length) await fetchComments(ids);
+          renderPosts(posts, false);
+          if (data.length) lastId = data[data.length-1].id;
+          updateLoadMoreUI();
+          requestNotify();
+          setInterval(fetchStats, 30000);
+        } catch (err) {
+          console.error(err);
+          feed.innerHTML = '<div class="empty-state" style="color:#f87171;"><i class="fas fa-circle-exclamation"></i><p>Failed to load feed</p></div>';
+        }
+      }
+
+      async function loadPosts(cursor = null) {
+        if (!hasMore) return;
+        addSkeleton();
+        loadMoreBtn.disabled = true;
+        let query = supabase
+          .from('posts')
+          .select('*')
+          .order('id', { ascending: false })
+          .limit(PAGE_SIZE);
+        if (cursor) query = query.lt('id', cursor);
+        if (activeTag) query = query.contains('tags', [activeTag]);
+        if (membersFilter && subscribersFilter) {
+          query = query.or(`members_only.eq.true,subscribers_only.eq.true`);
+        } else if (membersFilter) {
+          query = query.eq('members_only', true);
+        } else if (subscribersFilter) {
+          query = query.eq('subscribers_only', true);
+        }
+        const { data, error } = await query;
+        removeSkeleton();
+        loadMoreBtn.disabled = false;
+        if (error) { console.error(error); return; }
+        if (data.length < PAGE_SIZE) hasMore = false;
+        if (!data.length) { updateLoadMoreUI(); return; }
+        const newPosts = data;
+        posts = posts.concat(newPosts);
+        const ids = newPosts.map(p => p.id);
+        await fetchComments(ids);
+        renderPosts(newPosts, true);
+        lastId = newPosts[newPosts.length - 1].id;
+        updateLoadMoreUI();
+      }
+
+      function updateLoadMoreUI() {
+        if (hasMore && posts.length && !searchTerm) loadMoreBtn.style.display = 'inline-block';
+        else loadMoreBtn.style.display = 'none';
+      }
+
+      function addSkeleton() {
+        feed.insertAdjacentHTML('beforeend', `<div class="skeleton"><div class="line short"></div><div class="line long"></div><div class="line long" style="width:80%;"></div><div class="line short" style="width:30%;"></div></div>`);
+      }
+      function removeSkeleton() {
+        const sk = feed.querySelector('.skeleton:last-child');
+        if (sk) sk.remove();
+      }
+      function showSkeletons(n=3) {
+        feed.innerHTML = Array(n).fill(0).map(() =>
+          `<div class="skeleton"><div class="line short"></div><div class="line long"></div><div class="line long" style="width:80%;"></div><div class="line short" style="width:30%;"></div></div>`
+        ).join('');
+      }
+
+      // ==============================================================
+      // SEARCH & SORT
+      // ==============================================================
+      let searchTimeout;
+      searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          const term = this.value.trim().toLowerCase();
+          searchTerm = term;
+          if (!term) { renderPosts(posts, false); updateLoadMoreUI(); return; }
+          const filtered = posts.filter(p => (p.content || '').toLowerCase().includes(term) || (p.title || '').toLowerCase().includes(term));
+          renderPosts(filtered, false);
+          loadMoreBtn.style.display = 'none';
+        }, 300);
+      });
+
+      function applySort(type) {
+        currentSort = type;
+        let arr = searchTerm ? posts.filter(p => (p.content || '').toLowerCase().includes(searchTerm) || (p.title || '').toLowerCase().includes(searchTerm)) : [...posts];
+        if (type === 'trending') arr.sort((a,b) => (b.likes_count||0) - (a.likes_count||0));
+        else if (type === 'random') arr.sort(() => Math.random() - 0.5);
+        else arr.sort((a,b) => b.id - a.id);
+        renderPosts(arr, false);
+        if (searchTerm) loadMoreBtn.style.display = 'none';
+        else updateLoadMoreUI();
+      }
+      sortSelect.addEventListener('change', e => applySort(e.target.value));
+
+      // ==============================================================
+      // CREATE POST
+      // ==============================================================
+      async function createPost() {
+        if (isSubmitting) return;
+        const title = titleInput.value.trim();
+        const username = usernameInput.value.trim();
+        const content = postInput.value.trim();
+        const blurred = blurToggle.checked;
+        const password = postPassword.value.trim();
+        const age = parseInt(postAge.value) || 0;
+        const selectedTags = Array.from(tagsSelect.selectedOptions).map(opt => opt.value);
+        const membersOnly = currentUser && membersOnlyCheck.checked;
+        const subscribersOnly = currentUser && subscribersOnlyCheck.checked;
+
+        if (!content) { postInput.focus(); postInput.style.borderColor = '#f87171'; setTimeout(() => postInput.style.borderColor = '', 1500); return; }
+
+        isSubmitting = true;
+        publishBtn.disabled = true;
+        publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+        try {
+          let mediaUrl = null;
+          if (username.length > 0 && selectedFile) {
+            mediaUrl = await uploadFile(selectedFile);
+            if (!mediaUrl) {
+              alert('Failed to upload file.');
+              isSubmitting = false;
+              publishBtn.disabled = false;
+              publishBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publish';
+              return;
+            }
+          }
+
+          const password_hash = password ? await sha256(password) : null;
+          const tags = [...selectedTags, ...extractHashtags(content)];
+          const uniqueTags = [...new Set(tags)];
+          const role = getRole(username);
+
+          const newPost = {
+            title: title || null,
+            username: username || null,
+            content: content,
+            user_email: currentUser?.email || 'user_' + Math.floor(Math.random()*10000) + '@pulse.local',
+            likes_count: 0,
+            bookmarks_count: 0,
+            tags: uniqueTags.length ? uniqueTags : null,
+            image_url: mediaUrl,
+            blurred: blurred && mediaUrl ? blurred : false,
+            password_hash: password_hash,
+            age_required: age || null,
+            members_only: membersOnly || false,
+            subscribers_only: subscribersOnly || false,
+            views_count: 0
+          };
+          const { data, error } = await supabase.from('posts').insert([newPost]).select();
+          if (error) throw error;
+          if (data?.length) {
+            posts.unshift(data[0]);
+            commentsMap.set(data[0].id, []);
+            renderPosts(posts, false);
+            fireConfetti();
+            titleInput.value = '';
+            usernameInput.value = '';
+            postInput.value = '';
+            postPassword.value = '';
+            postAge.value = '';
+            mediaFileInput.value = '';
+            selectedFile = null;
+            imagePreview.style.display = 'none';
+            blurToggle.checked = false;
+            membersOnlyCheck.checked = false;
+            subscribersOnlyCheck.checked = false;
+            Array.from(tagsSelect.options).forEach(opt => opt.selected = false);
+            updateUploadVisibility();
+            notifyNew(content);
+            fetchStats();
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Publish failed: ' + err.message);
+        } finally {
+          isSubmitting = false;
+          publishBtn.disabled = false;
+          publishBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publish';
+        }
+      }
+
+      publishBtn.addEventListener('click', createPost);
+      postInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); createPost(); } });
+
+      loadMoreBtn.addEventListener('click', async () => {
+        if (!hasMore) return;
+        loadingMore.style.display = 'block';
+        loadMoreBtn.style.display = 'none';
+        await loadPosts(lastId);
+        loadingMore.style.display = 'none';
+        updateLoadMoreUI();
+      });
+
+      subscribeBtn.addEventListener('click', () => { togglePaymentModal(true); });
+
+      // ==============================================================
+      // KEYBOARD SHORTCUTS
+      // ==============================================================
+      document.addEventListener('keydown', e => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); searchInput.focus(); }
+        if (e.key === '?' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); document.getElementById('shortcutsModal').classList.toggle('open'); }
+        if (e.key === 'Escape') {
+          if (document.getElementById('shortcutsModal').classList.contains('open')) {
+            document.getElementById('shortcutsModal').classList.remove('open');
+          } else if (document.activeElement === searchInput) searchInput.blur();
+        }
+        if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.target.closest('input,textarea,select')) {
+          e.preventDefault(); titleInput.focus();
+        }
+        if (e.key === 'j' || e.key === 'k') {
+          const cards = feed.querySelectorAll('.post-card');
+          if (!cards.length) return;
+          let current = document.activeElement;
+          let idx = -1;
+          if (current && current.closest('.post-card')) {
+            const parentCard = current.closest('.post-card');
+            idx = Array.from(cards).indexOf(parentCard);
+          } else {
+            idx = (e.key === 'j') ? 0 : cards.length - 1;
+          }
+          let newIdx = (e.key === 'j') ? Math.min(idx + 1, cards.length - 1) : Math.max(idx - 1, 0);
+          if (newIdx !== idx) {
+            cards[newIdx].focus();
+            cards[newIdx].scrollIntoView({ block: 'center' });
+          }
+        }
+      });
+
+      // ==============================================================
+      // PAYMENT MODAL
+      // ==============================================================
+      const processors = [
+        {name:'PayPal',color:'#003087',icon:'fab fa-paypal',text:'#fff'},
+        {name:'Visa',color:'#1A1F71',icon:'fab fa-cc-visa',text:'#fff'},
+        {name:'Mastercard',color:'#EB001B',icon:'fab fa-cc-mastercard',text:'#fff'},
+        {name:'Apple Pay',color:'#000',icon:'fab fa-apple',text:'#fff'},
+        {name:'Bitcoin',color:'#f7931a',icon:'fab fa-bitcoin',text:'#fff'},
+        {name:'Stripe',color:'#635bff',icon:'fas fa-credit-card',text:'#fff'},
+        {name:'Venmo',color:'#3D95CE',icon:'fas fa-venmo',text:'#fff'},
+        {name:'Cash App',color:'#00D632',icon:'fas fa-dollar-sign',text:'#fff'}
+      ];
+      function initPaymentModal() {
+        const select = document.getElementById('processorSelect');
+        processors.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.name; opt.textContent = p.name;
+          select.appendChild(opt);
+        });
+        select.addEventListener('change', (e) => {
+          const p = processors.find(x => x.name === e.target.value) || processors[0];
+          const btn = document.getElementById('dynamicPayBtn');
+          btn.style.background = p.color; btn.style.color = p.text;
+          btn.innerHTML = `<i class="${p.icon}"></i> Pay with ${p.name}`;
+        });
+      }
+      function togglePaymentModal(show) { document.getElementById('paymentModal').classList.toggle('open', show); }
+      window.togglePaymentModal = togglePaymentModal;
+      function copyBTC() { const addr = document.getElementById('btcAddr').textContent; navigator.clipboard.writeText(addr); alert('BTC Address Copied!'); }
+      window.copyBTC = copyBTC;
+
+      // ==============================================================
+      // SUPPORT WIDGET
+      // ==============================================================
+      (function() {
+        var btn = document.getElementById('showWidgetBtn');
+        var widgetDiv = document.getElementById('widgetContainer');
+        var closeBtn = document.getElementById('closeWidgetBtn');
+        if (btn && widgetDiv) {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            widgetDiv.style.display = (widgetDiv.style.display === 'none' || widgetDiv.style.display === '') ? 'block' : 'none';
+          });
+          if (closeBtn) {
+            closeBtn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              widgetDiv.style.display = 'none';
+            });
+          }
+          document.addEventListener('click', function(event) {
+            var container = document.getElementById('tipButtonContainer');
+            if (container && !container.contains(event.target)) {
+              widgetDiv.style.display = 'none';
+            }
+          });
+        }
+      })();
+
+      // ==============================================================
+      // REALTIME
+      // ==============================================================
+      function subscribe() {
+        supabase.channel('public:posts')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, payload => {
+            const p = payload.new;
+            if (posts.some(po => po.id === p.id)) return;
+            resetFeed();
+          })
+          .subscribe();
+        supabase.channel('public:comments')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments' }, payload => {
+            const c = payload.new;
+            const pid = c.post_id;
+            if (commentsMap.has(pid)) {
+              commentsMap.get(pid).push(c);
+              const list = document.getElementById(`commentList-${pid}`);
+              if (list) list.innerHTML = renderComments(pid);
+              const toggle = document.querySelector(`.comment-toggle[data-id="${pid}"]`);
+              if (toggle) {
+                const cs = toggle.querySelector('.comment-count');
+                if (cs) cs.textContent = commentsMap.get(pid).length;
+              }
+            }
+            fetchStats();
+          })
+          .subscribe();
+      }
+
+      // ==============================================================
+      // INIT
+      // ==============================================================
+      initPaymentModal();
+      checkAuth().then(() => {
+        loadFeed();
+        subscribe();
+      });
+
+      window.unlockPost = unlockPost;
+      window.verifyAge = verifyAge;
+      window.openLightbox = openLightbox;
+      window.closeLightbox = closeLightbox;
+      window.togglePaymentModal = togglePaymentModal;
+      window.copyBTC = copyBTC;
+
     })();
-
-    // ==============================================================
-    // Start
-    // ==============================================================
-    checkAuth().then(() => {
-      initFeed();
-      subscribe();
-    });
-
-  })();
-</script>
+  </script>
 </body>
 </html>
