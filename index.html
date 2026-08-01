@@ -108,6 +108,20 @@
             margin-bottom: 1.5rem;
             padding: 0.2rem 0;
         }
+        .header .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .header .brand img {
+            height: 38px;
+            width: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.15);
+        }
         .header h1 {
             font-size: 2rem;
             font-weight: 700;
@@ -198,6 +212,12 @@
             font-size: 0.7rem;
             color: white;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+        .auth-btn .avatar-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .auth-btn .display-name {
             font-size: 0.8rem;
@@ -223,25 +243,36 @@
             overflow: hidden;
             position: relative;
             box-shadow: 0 0 30px rgba(167, 139, 250, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ticker-wrapper .ticker-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            background: rgba(167, 139, 250, 0.15);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(167, 139, 250, 0.2);
+        }
+        .ticker-wrapper .ticker-icon img {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
         }
         .ticker-wrapper::before {
-            content: '⚡';
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.9rem;
-            color: #a78bfa;
-            z-index: 2;
-            background: #0e0e1a;
-            padding-right: 8px;
+            content: none;
         }
         .ticker-content {
             display: flex;
             white-space: nowrap;
             animation: tickerScroll 40s linear infinite;
-            padding-left: 30px;
             will-change: transform;
+            flex: 1;
         }
         .ticker-wrapper:hover .ticker-content {
             animation-play-state: paused;
@@ -299,13 +330,17 @@
                 font-size: 0.7rem;
                 padding: 0.1rem 1.2rem 0.1rem 0.8rem;
             }
-            .ticker-wrapper::before {
-                font-size: 0.7rem;
-                left: 8px;
-            }
             .ticker-content {
-                padding-left: 20px;
                 animation-duration: 30s;
+            }
+            .ticker-wrapper .ticker-icon {
+                width: 26px;
+                height: 26px;
+                font-size: 1rem;
+            }
+            .ticker-wrapper .ticker-icon img {
+                width: 16px;
+                height: 16px;
             }
         }
 
@@ -686,6 +721,9 @@
             align-items: center;
             gap: 6px;
             transition: all 0.2s ease;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
         .upload-row .file-upload .file-label:hover {
             background: rgba(167, 139, 250, 0.15);
@@ -693,6 +731,13 @@
         }
         .upload-row .file-upload .file-label i {
             font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .upload-row .file-upload .file-label .file-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+            display: inline-block;
         }
         .upload-row .image-preview {
             max-width: 80px;
@@ -701,6 +746,9 @@
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             display: none;
+        }
+        .upload-row .image-preview.visible {
+            display: block;
         }
         .upload-row .upload-hint {
             color: #64748b;
@@ -714,6 +762,7 @@
             color: #94a3b8;
             font-size: 0.85rem;
             cursor: pointer;
+            flex-shrink: 0;
         }
         .upload-row .blur-check input[type="checkbox"] {
             width: 18px;
@@ -878,6 +927,12 @@
             font-size: 1rem;
             color: #fff;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .post-user {
             font-weight: 600;
@@ -941,6 +996,9 @@
             height: auto;
             display: block;
             transition: filter 0.3s ease;
+            max-height: 500px;
+            object-fit: contain;
+            background: #0a0a14;
         }
         .post-image-wrapper.blurred img,
         .post-image-wrapper.blurred video {
@@ -1051,6 +1109,12 @@
             color: #fff;
             flex-shrink: 0;
             background: #4f46e5;
+            overflow: hidden;
+        }
+        .comment-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .comment-body {
             background: rgba(255, 255, 255, 0.04);
@@ -1183,6 +1247,12 @@
             font-size: 2.5rem;
             margin-bottom: 1rem;
             opacity: 0.3;
+        }
+        .empty-state img {
+            max-width: 120px;
+            margin-bottom: 1rem;
+            opacity: 0.4;
+            border-radius: 16px;
         }
 
         /* ===== MODALS ===== */
@@ -1981,6 +2051,10 @@
             .header h1 {
                 font-size: 1.6rem;
             }
+            .header .brand img {
+                height: 30px;
+                width: 30px;
+            }
             .header-controls input[type="search"] {
                 width: 130px;
             }
@@ -2109,7 +2183,10 @@
 
         <!-- HEADER -->
         <div class="header">
-            <h1><i class="fas fa-bolt"></i> Pulse</h1>
+            <a class="brand" href="#">
+                <img src="https://ui-avatars.com/api/?name=Pulse&size=38&background=a78bfa&color=fff&bold=true&font-size=0.5" alt="Pulse Logo" />
+                <h1><i class="fas fa-bolt"></i> Pulse</h1>
+            </a>
             <div class="header-controls">
                 <input type="search" id="searchInput" placeholder="Search posts..." />
                 <select id="sortSelect">
@@ -2125,6 +2202,9 @@
 
         <!-- ===== TICKER ===== -->
         <div class="ticker-wrapper" id="tickerWrapper">
+            <div class="ticker-icon">
+                <img src="https://ui-avatars.com/api/?name=✨&size=24&background=1a1a2e&color=a78bfa&bold=true" alt="✨" />
+            </div>
             <div class="ticker-content" id="tickerContent">
                 <span class="ticker-item">✨ Welcome to Pulse · Stay connected</span>
                 <span class="ticker-item">📊 Loading stats...</span>
@@ -3048,6 +3128,53 @@
             }
 
             // ==============================================================
+            // IMAGE PREVIEW HELPERS
+            // ==============================================================
+            function setupImagePreview(fileInput, previewEl, labelTextEl) {
+                fileInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        // Show filename
+                        if (labelTextEl) {
+                            labelTextEl.textContent = file.name.length > 20 ? file.name.slice(0, 18) + '…' : file.name;
+                            labelTextEl.style.color = '#34d399';
+                        }
+                        // Show preview
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            previewEl.src = e.target.result;
+                            previewEl.classList.add('visible');
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        if (labelTextEl) {
+                            labelTextEl.textContent = 'Choose Image';
+                            labelTextEl.style.color = '';
+                        }
+                        previewEl.src = '';
+                        previewEl.classList.remove('visible');
+                    }
+                });
+            }
+
+            // Setup all image previews
+            setupImagePreview(
+                document.getElementById('mediaFileInput'),
+                document.getElementById('imagePreview'),
+                document.getElementById('fileLabelText')
+            );
+            setupImagePreview(
+                document.getElementById('membersMediaFileInput'),
+                document.getElementById('membersImagePreview'),
+                document.getElementById('membersFileLabelText')
+            );
+            setupImagePreview(
+                document.getElementById('subscribersMediaFileInput'),
+                document.getElementById('subscribersImagePreview'),
+                document.getElementById('subscribersFileLabelText')
+            );
+
+            // ==============================================================
             // RENDER POSTS
             // ==============================================================
             let postsCache = {};
@@ -3069,7 +3196,9 @@
                     const name = raw.split('@')[0] || 'Anonymous';
                     return `
                         <div class="comment-item">
-                            <div class="comment-avatar" style="background:${getColor(name)};">${getInitials(name)}</div>
+                            <div class="comment-avatar" style="background:${getColor(name)};">
+                                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=28&background=${getColor(name).replace('hsl','').replace('(','').replace(')','')}&color=fff&bold=true" alt="${escapeHTML(name)}" onerror="this.style.display='none'" />
+                            </div>
                             <div class="comment-body">
                                 <div class="comment-user">${escapeHTML(name)} <span class="comment-time">${timeAgo(c.created_at)}</span></div>
                                 <div class="comment-text">${escapeHTML(c.content)}</div>
@@ -3084,7 +3213,7 @@
                     category === 'members' ? feedMembers : feedSubscribers;
                 if (!postsData?.length) {
                     if (!append) container.innerHTML =
-                        '<div class="empty-state"><i class="fas fa-feather-pointed"></i><p>No posts in this section yet.</p></div>';
+                        `<div class="empty-state"><img src="https://ui-avatars.com/api/?name=📝&size=80&background=1a1a2e&color=64748b" alt="No posts" /><p>No posts in this section yet.</p></div>`;
                     return;
                 }
                 let html = '';
@@ -3135,10 +3264,15 @@
                         }
                     }
 
+                    const avatarImg =
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=40&background=${color.replace('hsl','').replace('(','').replace(')','')}&color=fff&bold=true`;
+
                     html += `
                         <div class="post-card ${tintClass}" data-id="${post.id}" id="post-${post.id}">
                             <div class="post-header">
-                                <div class="avatar" style="background:${color};">${initials}</div>
+                                <div class="avatar" style="background:${color};">
+                                    <img src="${avatarImg}" alt="${escapeHTML(displayName)}" onerror="this.style.display='none'" />
+                                </div>
                                 <div class="post-user">
                                     <span class="username-display">${escapeHTML(displayName)}</span>
                                     <span class="tint-badge ${tintInfo.tint}">${tintInfo.emoji} ${tintInfo.badge}</span>
@@ -3445,7 +3579,7 @@
                         category === 'members' ? feedMembers : feedSubscribers;
                     if (!loadMore) {
                         container.innerHTML =
-                            '<div class="empty-state"><i class="fas fa-wifi"></i><p>⚠️ Cannot connect to Supabase. Please check your internet connection.</p></div>';
+                            `<div class="empty-state"><img src="https://ui-avatars.com/api/?name=⚠️&size=80&background=1a1a2e&color=64748b" alt="Error" /><p>⚠️ Cannot connect to Supabase. Please check your internet connection.</p></div>`;
                     }
                     return;
                 }
@@ -3486,7 +3620,7 @@
                             const container = category === 'public' ? feedPublic :
                                 category === 'members' ? feedMembers : feedSubscribers;
                             container.innerHTML =
-                                '<div class="empty-state"><i class="fas fa-feather-pointed"></i><p>No posts in this section yet.</p></div>';
+                                `<div class="empty-state"><img src="https://ui-avatars.com/api/?name=📝&size=80&background=1a1a2e&color=64748b" alt="No posts" /><p>No posts in this section yet.</p></div>`;
                         }
                         return;
                     }
@@ -3647,8 +3781,20 @@
                     const previewId = previewMap[buttonId];
                     if (previewId) {
                         const preview = document.getElementById(previewId);
-                        if (preview) { preview.style.display = 'none';
+                        if (preview) { preview.classList.remove('visible');
                             preview.src = ''; }
+                    }
+                    // Reset file label
+                    const labelMap = {
+                        'publishBtn': 'fileLabelText',
+                        'membersPublishBtn': 'membersFileLabelText',
+                        'subscribersPublishBtn': 'subscribersFileLabelText'
+                    };
+                    const labelId = labelMap[buttonId];
+                    if (labelId) {
+                        const label = document.getElementById(labelId);
+                        if (label) { label.textContent = 'Choose Image';
+                            label.style.color = ''; }
                     }
                     blurEl.checked = false;
 
@@ -3897,8 +4043,13 @@
                     let displayName = user.email ? user.email.split('@')[0] : 'User';
                     if (user.email === ADMIN_EMAIL) displayName = 'Admin';
                     const initials = displayName.substring(0, 2).toUpperCase();
+                    const color = getColor(displayName);
+                    const avatarUrl =
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=28&background=${color.replace('hsl','').replace('(','').replace(')','')}&color=fff&bold=true`;
                     authBtn.innerHTML = `
-                        <div class="avatar-small" style="background:${getColor(displayName)};">${initials}</div>
+                        <div class="avatar-small" style="background:${color};">
+                            <img src="${avatarUrl}" alt="${escapeHTML(displayName)}" onerror="this.style.display='none'" />
+                        </div>
                         <span class="display-name">${escapeHTML(displayName)}</span>
                         <i class="fas fa-sign-out-alt" style="font-size:0.8rem; color:#94a3b8;"></i>
                     `;
@@ -4604,7 +4755,7 @@
             });
 
             console.log('🚀 Pulse loaded' + (supabaseReady ? ' with Supabase' :
-            ' (offline mode - Supabase not available)'));
+                ' (offline mode - Supabase not available)'));
 
         })();
     </script>
