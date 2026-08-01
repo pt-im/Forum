@@ -989,6 +989,7 @@
             overflow: hidden;
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.04);
+            cursor: pointer;
         }
         .post-image-wrapper img,
         .post-image-wrapper video {
@@ -1019,6 +1020,25 @@
             gap: 6px;
             backdrop-filter: blur(4px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        /* zoom hint */
+        .post-image-wrapper .zoom-hint {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(4px);
+            color: #fff;
+            font-size: 0.6rem;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+        }
+        .post-image-wrapper:hover .zoom-hint {
+            opacity: 1;
         }
         .post-footer {
             display: flex;
@@ -2042,6 +2062,140 @@
         }
 
         /* ================================================================
+           FULLSCREEN LIGHTBOX GALLERY
+           ================================================================ */
+        #lightboxOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(16px);
+            z-index: 99999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            padding: 2rem;
+        }
+        #lightboxOverlay.open {
+            display: flex;
+            opacity: 1;
+        }
+        #lightboxOverlay .lb-close {
+            position: fixed;
+            top: 24px;
+            right: 28px;
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: #fff;
+            font-size: 2rem;
+            cursor: pointer;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
+        }
+        #lightboxOverlay .lb-close:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: scale(1.05);
+        }
+        #lightboxOverlay .lb-image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            max-height: 90vh;
+            position: relative;
+        }
+        #lightboxOverlay .lb-image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        #lightboxOverlay .lb-nav {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #fff;
+            font-size: 2.2rem;
+            cursor: pointer;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(8px);
+            z-index: 10;
+        }
+        #lightboxOverlay .lb-nav:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-50%) scale(1.05);
+        }
+        #lightboxOverlay .lb-nav.lb-prev {
+            left: 24px;
+        }
+        #lightboxOverlay .lb-nav.lb-next {
+            right: 24px;
+        }
+        #lightboxOverlay .lb-counter {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.4rem 1.2rem;
+            border-radius: 30px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.3px;
+        }
+        @media (max-width: 640px) {
+            #lightboxOverlay .lb-nav {
+                width: 40px;
+                height: 40px;
+                font-size: 1.4rem;
+            }
+            #lightboxOverlay .lb-nav.lb-prev {
+                left: 8px;
+            }
+            #lightboxOverlay .lb-nav.lb-next {
+                right: 8px;
+            }
+            #lightboxOverlay .lb-close {
+                top: 12px;
+                right: 12px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
+            }
+            #lightboxOverlay {
+                padding: 0.5rem;
+            }
+        }
+
+        /* ================================================================
            RESPONSIVE
            ================================================================ */
         @media (max-width: 640px) {
@@ -2176,6 +2330,17 @@
             </div>
             <button class="modal-close" id="modalCloseBtn">Close</button>
         </div>
+    </div>
+
+    <!-- ===== FULLSCREEN LIGHTBOX ===== -->
+    <div id="lightboxOverlay">
+        <button class="lb-close" id="lbClose" title="Close (Esc)">✕</button>
+        <button class="lb-nav lb-prev" id="lbPrev" title="Previous (←)">‹</button>
+        <button class="lb-nav lb-next" id="lbNext" title="Next (→)">›</button>
+        <div class="lb-image-container" id="lbImageContainer">
+            <img id="lbImage" src="" alt="Fullscreen image" />
+        </div>
+        <div class="lb-counter" id="lbCounter">1 / 1</div>
     </div>
 
     <!-- ===== APP ===== -->
@@ -3175,7 +3340,105 @@
             );
 
             // ==============================================================
-            // RENDER POSTS
+            // LIGHTBOX GALLERY
+            // ==============================================================
+            const lightboxOverlay = document.getElementById('lightboxOverlay');
+            const lbImage = document.getElementById('lbImage');
+            const lbCounter = document.getElementById('lbCounter');
+            const lbClose = document.getElementById('lbClose');
+            const lbPrev = document.getElementById('lbPrev');
+            const lbNext = document.getElementById('lbNext');
+
+            let galleryImages = [];
+            let currentIndex = 0;
+
+            function openLightbox(src, allImages) {
+                if (!src) return;
+                galleryImages = allImages || [];
+                const idx = galleryImages.indexOf(src);
+                currentIndex = idx !== -1 ? idx : 0;
+                lbImage.src = galleryImages[currentIndex] || src;
+                updateCounter();
+                lightboxOverlay.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeLightbox() {
+                lightboxOverlay.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            function updateCounter() {
+                const total = galleryImages.length;
+                lbCounter.textContent = total > 0 ? `${currentIndex+1} / ${total}` : '1 / 1';
+            }
+
+            function navigate(direction) {
+                if (galleryImages.length === 0) return;
+                currentIndex = (currentIndex + direction + galleryImages.length) % galleryImages.length;
+                lbImage.src = galleryImages[currentIndex];
+                updateCounter();
+            }
+
+            // Attach click handlers to image wrappers
+            function attachLightboxListeners(container) {
+                const wrappers = container.querySelectorAll('.post-image-wrapper:has(img)');
+                wrappers.forEach(wrapper => {
+                    const img = wrapper.querySelector('img');
+                    if (!img || !img.src) return;
+                    // Remove old listener to avoid duplicates
+                    wrapper.removeEventListener('click', wrapper._lbHandler);
+                    const handler = function(e) {
+                        // Don't trigger if clicked on blur-badge or video
+                        if (e.target.closest('.blur-badge')) return;
+                        if (e.target.closest('video')) return;
+                        // Collect all images from the same feed container
+                        const feedContainer = this.closest('.feed-list');
+                        const allImgs = [];
+                        if (feedContainer) {
+                            feedContainer.querySelectorAll('.post-image-wrapper img').forEach(el => {
+                                if (el.src) allImgs.push(el.src);
+                            });
+                        } else {
+                            // fallback: all images on page
+                            document.querySelectorAll('.post-image-wrapper img').forEach(el => {
+                                if (el.src) allImgs.push(el.src);
+                            });
+                        }
+                        openLightbox(img.src, allImgs);
+                    };
+                    wrapper._lbHandler = handler;
+                    wrapper.addEventListener('click', handler);
+                });
+            }
+
+            // Call after rendering
+            function attachLightboxToAllFeeds() {
+                [feedPublic, feedMembers, feedSubscribers].forEach(feed => {
+                    if (feed) attachLightboxListeners(feed);
+                });
+            }
+
+            // Lightbox event listeners
+            lbClose.addEventListener('click', closeLightbox);
+            lbPrev.addEventListener('click', () => navigate(-1));
+            lbNext.addEventListener('click', () => navigate(1));
+
+            lightboxOverlay.addEventListener('click', function(e) {
+                if (e.target === this) closeLightbox();
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (!lightboxOverlay.classList.contains('open')) return;
+                if (e.key === 'Escape') { closeLightbox(); }
+                if (e.key === 'ArrowLeft') { e.preventDefault();
+                    navigate(-1); }
+                if (e.key === 'ArrowRight') { e.preventDefault();
+                    navigate(1); }
+            });
+
+            // ==============================================================
+            // RENDER POSTS (overridden to include lightbox hooks)
             // ==============================================================
             let postsCache = {};
             let commentsMap = new Map();
@@ -3259,6 +3522,7 @@
                                 <div class="post-image-wrapper ${blurClass}" id="mediaWrapper-${post.id}">
                                     <img src="${escapeHTML(url)}" alt="Post media" loading="lazy" onerror="this.style.display='none'" />
                                     ${post.blurred ? `<div class="blur-badge"><i class="fas fa-eye-slash"></i> Blurred</div>` : ''}
+                                    <div class="zoom-hint"><i class="fas fa-expand"></i> Click to enlarge</div>
                                 </div>
                             `;
                         }
@@ -3325,11 +3589,13 @@
                     }
                 }));
 
+                // Attach lightbox listeners to images in this container
+                attachLightboxListeners(container);
                 observePostViews();
             }
 
             // ==============================================================
-            // INTERACTION HANDLERS
+            // INTERACTION HANDLERS (like, bookmark, blur, comments)
             // ==============================================================
             async function toggleBlur(e) {
                 const btn = e.currentTarget;
