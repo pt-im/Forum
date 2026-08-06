@@ -2833,7 +2833,7 @@
     </div><!-- end .app-container -->
 
     <!-- ================================================================
-    JAVASCRIPT
+    JAVASCRIPT (FIXED: visitor counter increments on every page load)
     ================================================================ -->
     <script>
         (function() {
@@ -4098,7 +4098,56 @@
             });
 
             // ==============================================================
-            // FETCH STATS
+            // NEW FUNCTION: Increment total visitor count using sitestats table
+            // ==============================================================
+            async function incrementTotalVisits() {
+                if (!supabaseReady) return null;
+                try {
+                    // Try to update, and if no row exists, insert with 1001
+                    const { data, error } = await supabase.rpc('increment_visitor_count');
+                    // If RPC doesn't exist, fallback to direct update
+                    if (error && error.message && error.message.includes('function')) {
+                        // Direct update with fallback insert
+                        let { data: current, error: selectError } = await supabase
+                            .from('sitestats')
+                            .select('totalvisits')
+                            .eq('id', 1)
+                            .single();
+
+                        if (selectError && selectError.code === 'PGRST116') {
+                            // No row, insert with initial 1001
+                            const { error: insertError } = await supabase
+                                .from('sitestats')
+                                .insert({ id: 1, totalvisits: 1001 });
+                            if (insertError) throw insertError;
+                            return 1001;
+                        } else if (selectError) {
+                            throw selectError;
+                        }
+
+                        let currentCount = current?.totalvisits || 1001;
+                        if (currentCount >= 99999) return currentCount; // cap
+                        const newCount = currentCount + 1;
+                        const { error: updateError } = await supabase
+                            .from('sitestats')
+                            .update({ totalvisits: newCount })
+                            .eq('id', 1);
+                        if (updateError) throw updateError;
+                        return newCount;
+                    } else if (error) {
+                        throw error;
+                    } else {
+                        // RPC succeeded
+                        return Number(data);
+                    }
+                } catch (e) {
+                    console.warn('Visitor increment failed:', e);
+                    return null;
+                }
+            }
+
+            // ==============================================================
+            // FETCH STATS (now reads total visitors from sitestats)
             // ==============================================================
             async function fetchStats() {
                 if (!supabaseReady) {
@@ -4155,11 +4204,21 @@
                         .gte('last_seen', fiveMinAgo);
                     if (err5) throw err5;
 
-                    const { data: visitorData, error: err6 } = await supabase
-                        .from('visitors')
-                        .select('visitor_id');
-                    if (err6) throw err6;
-                    const totalVisitors = new Set(visitorData.map(row => row.visitor_id)).size;
+                    // ---- Read total visitors from sitestats ----
+                    let visitorCount = 1001;
+                    const { data: statsData, error: statsError } = await supabase
+                        .from('sitestats')
+                        .select('totalvisits')
+                        .eq('id', 1)
+                        .single();
+                    if (!statsError && statsData) {
+                        visitorCount = statsData.totalvisits || 1001;
+                    } else {
+                        // If table doesn't exist, create it via insert (will fail if no table)
+                        // We'll just use fallback and let the increment create it
+                        // But for display, we'll use default.
+                    }
+                    // ---------------------------------------------
 
                     statPosts.textContent = postsCount || 0;
                     statReplies.textContent = repliesCount || 0;
@@ -4168,7 +4227,7 @@
                     statBots.textContent = botSet.size || 0;
                     statUsers.textContent = distinctEmails.size || 0;
                     statOnline.textContent = onlineCount || 0;
-                    statVisitors.textContent = totalVisitors || 0;
+                    statVisitors.textContent = visitorCount;
 
                     refreshTicker();
 
@@ -4178,27 +4237,8 @@
             }
 
             // ==============================================================
-            // VISITOR TRACKING
+            // VISITOR TRACKING (removed – no longer used for total visitors)
             // ==============================================================
-            function getVisitorId() {
-                let id = localStorage.getItem('pulse_visitor');
-                if (!id) {
-                    id = crypto.randomUUID ? crypto.randomUUID() : 'visitor_' + Date.now() + '_' + Math.random().toString(36)
-                        .slice(2);
-                    localStorage.setItem('pulse_visitor', id);
-                }
-                return id;
-            }
-
-            async function trackVisitor() {
-                if (!supabaseReady) return;
-                const visitorId = getVisitorId();
-                try {
-                    await supabase
-                        .from('visitors')
-                        .upsert({ visitor_id: visitorId, last_seen: new Date().toISOString() }, { onConflict: 'visitor_id' });
-                } catch (e) { /* ignore */ }
-            }
 
             // ==============================================================
             // AUTH
@@ -5000,7 +5040,7 @@
             }
 
             // ==============================================================
-            // START
+            // STARTUP – increment visitor count and then load everything
             // ==============================================================
             // Show intro overlay for 2 seconds, then hide
             setTimeout(() => {
@@ -5008,20 +5048,31 @@
                 if (overlay) overlay.classList.add('hidden');
             }, 2000);
 
-            checkAuth().then(async () => {
-                await trackVisitor();
+            // Main startup
+            (async function init() {
+                // First, increment the total visitor count
+                const newCount = await incrementTotalVisits();
+                if (newCount !== null && statVisitors) {
+                    statVisitors.textContent = newCount;
+                }
+
+                // Then proceed with auth, fetch stats, etc.
+                await checkAuth();
                 await fetchStats();
                 switchTab('public');
                 subscribe();
-                setInterval(async () => {
-                    await trackVisitor();
-                    await fetchStats();
-                }, 30000);
-                setTimeout(refreshTicker, 1000);
-            });
 
-            console.log('🚀 Pulse loaded' + (supabaseReady ? ' with Supabase' :
-                ' (offline mode - Supabase not available)'));
+                // Periodic refresh of stats (but don't increment again)
+                setInterval(async () => {
+                    await fetchStats();
+                    await refreshTicker();
+                }, 30000);
+
+                setTimeout(refreshTicker, 1000);
+
+                console.log('🚀 Pulse loaded' + (supabaseReady ? ' with Supabase' :
+                    ' (offline mode - Supabase not available)'));
+            })();
 
         })();
     </script>
