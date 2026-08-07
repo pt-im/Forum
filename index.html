@@ -13,6 +13,8 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js">
     </script>
+    <script src="https://www.paypal.com/sdk/js?client-id=AZ9PGqfwfBFyHG_XK-wBvAfw2r-m6CkFWjQaEkI_NRDN76vf4g6EbfkM1rWXpyYnZGUej1KNKGxjWT3G&currency=USD&intent=capture">
+    </script>
     <style>
         /* ================================================================
            PULSE BASE STYLES (primary)
@@ -2282,6 +2284,185 @@
                 min-height: 60px;
             }
         }
+
+        /* ================================================================
+           PAYPAL CHECKOUT (BOTTOM OF SCREEN)
+           ================================================================ */
+        .paypal-checkout-section {
+            margin-top: 3rem;
+            padding: 2rem 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 28px;
+            box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.6);
+            transition: all 0.3s ease;
+        }
+        .paypal-checkout-section:hover {
+            border-color: rgba(167, 139, 250, 0.2);
+            box-shadow: 0 20px 60px -12px rgba(167, 139, 250, 0.15);
+        }
+        .paypal-checkout-section .checkout-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .paypal-checkout-section .checkout-header .icon-wrap {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7c3aed, #db2777);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: #fff;
+            flex-shrink: 0;
+            box-shadow: 0 0 30px rgba(124, 58, 237, 0.3);
+        }
+        .paypal-checkout-section .checkout-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin: 0;
+        }
+        .paypal-checkout-section .checkout-header .price-badge {
+            margin-left: auto;
+            background: rgba(167, 139, 250, 0.15);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            padding: 0.3rem 1.2rem;
+            border-radius: 40px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #a78bfa;
+        }
+        .paypal-checkout-section .checkout-body {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: stretch;
+        }
+        .paypal-checkout-section .checkout-body .info-col {
+            flex: 1;
+            min-width: 220px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+        .paypal-checkout-section .checkout-body .info-col .feature {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.3rem;
+        }
+        .paypal-checkout-section .checkout-body .info-col .feature i {
+            color: #34d399;
+            font-size: 0.85rem;
+            width: 20px;
+            text-align: center;
+        }
+        .paypal-checkout-section .checkout-body .paypal-col {
+            flex: 1.4;
+            min-width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        .paypal-checkout-section .checkout-body .paypal-col .paypal-status {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .paypal-checkout-section .checkout-body .paypal-col .paypal-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .paypal-checkout-section .checkout-body .paypal-col .paypal-status .dot.online {
+            background: #34d399;
+            animation: pulse-dot 1.5s ease-in-out infinite;
+        }
+        .paypal-checkout-section .checkout-body .paypal-col .paypal-status .dot.offline {
+            background: #64748b;
+        }
+        #paypalButtonContainer {
+            min-height: 50px;
+            width: 100%;
+            max-width: 420px;
+        }
+        #paypalButtonContainer .paypal-status-msg {
+            padding: 0.6rem 1rem;
+            border-radius: 12px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: #34d399;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        #paypalButtonContainer .paypal-status-msg.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+        .paypal-checkout-section .subscriber-badge-active {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #34d399;
+        }
+        .paypal-checkout-section .subscriber-badge-active i {
+            font-size: 0.9rem;
+        }
+        .paypal-checkout-section .auth-required-msg {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            padding: 1rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px dashed rgba(255, 255, 255, 0.06);
+        }
+        .paypal-checkout-section .auth-required-msg a {
+            color: #a78bfa;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .paypal-checkout-section .auth-required-msg a:hover {
+            color: #c4b5fd;
+        }
+
+        @media (max-width: 640px) {
+            .paypal-checkout-section {
+                padding: 1.2rem;
+                margin-top: 2rem;
+            }
+            .paypal-checkout-section .checkout-header h2 {
+                font-size: 1.2rem;
+            }
+            .paypal-checkout-section .checkout-header .price-badge {
+                font-size: 0.9rem;
+                padding: 0.2rem 0.8rem;
+            }
+            .paypal-checkout-section .checkout-body .paypal-col {
+                min-width: 200px;
+            }
+            #paypalButtonContainer {
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2451,6 +2632,8 @@
             <button class="tab-btn active" data-tab="public">🌍 Public</button>
             <button class="tab-btn" data-tab="members">🔒 Members</button>
             <button class="tab-btn" data-tab="subscribers">⭐ Subscribers</button>
+            <!-- DONATE TAB BUTTON -->
+            <button class="tab-btn" id="donateTabBtn">💝 Donate</button>
             <button class="tab-btn patreon-tab" data-tab="patreon">🌸 Patreon+</button>
             <button class="tab-btn admin-tab" data-tab="admin" id="adminTabBtn">🛡️ Admin Inbox</button>
         </div>
@@ -2830,6 +3013,43 @@
             <div id="loadingMore" class="loading-more"><i class="fas fa-spinner fa-spin"></i> Loading more...</div>
         </div>
 
+        <!-- ================================================================
+        PAYPAL CHECKOUT — BOTTOM OF THE PAGE
+        ================================================================ -->
+        <div class="paypal-checkout-section" id="paypalCheckoutSection">
+            <div class="checkout-header">
+                <div class="icon-wrap">
+                    <i class="fab fa-paypal"></i>
+                </div>
+                <h2>💖 Subscribe &amp; Unlock Premium</h2>
+                <span class="price-badge">$19.99 USD</span>
+            </div>
+            <div class="checkout-body">
+                <div class="info-col">
+                    <div class="feature"><i class="fas fa-check-circle"></i> One‑time payment</div>
+                    <div class="feature"><i class="fas fa-check-circle"></i> Instant subscriber access</div>
+                    <div class="feature"><i class="fas fa-check-circle"></i> Exclusive content &amp; perks</div>
+                    <div class="feature"><i class="fas fa-check-circle"></i> Cancel anytime</div>
+                    <div style="margin-top:0.8rem; font-size:0.8rem; color:#64748b;">
+                        <i class="fas fa-lock" style="color:#34d399;"></i> Secure checkout via PayPal
+                    </div>
+                </div>
+                <div class="paypal-col">
+                    <div id="paypalButtonContainer">
+                        <!-- PayPal button will be rendered here -->
+                        <div class="paypal-status-msg" id="paypalStatusMsg">
+                            <i class="fas fa-spinner fa-spin"></i> Loading checkout...
+                        </div>
+                    </div>
+                    <div class="paypal-status">
+                        <span class="dot online" id="paypalStatusDot"></span>
+                        <span id="paypalStatusText">Ready</span>
+                    </div>
+                    <div id="subscriberBadgeContainer" style="margin-top:0.2rem;"></div>
+                </div>
+            </div>
+        </div>
+
     </div><!-- end .app-container -->
 
     <!-- ================================================================
@@ -2844,8 +3064,14 @@
             const SUPABASE_KEY = "sb_publishable_ypObXvuLKlTXutfClJfwJQ_rqaG2mRi";
             const ADMIN_EMAIL = "hungbbcllc@gmail.com";
 
+            // PayPal Edge Functions use a separate Supabase project
+            const PAYPAL_SUPABASE_URL = "https://udblpaojoqwtqdryejgi.supabase.co";
+            const PAYPAL_SUPABASE_KEY = "sb_publishable_w0yGrrpWfuJqQFzNXXHM7g_cogUGoeq";
+
             let supabase = null;
             let supabaseReady = false;
+            let paypalSupabase = null;
+            let paypalSupabaseReady = false;
 
             try {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -2854,6 +3080,15 @@
             } catch (e) {
                 console.warn('⚠️ Supabase init failed:', e);
                 supabaseReady = false;
+            }
+
+            try {
+                paypalSupabase = window.supabase.createClient(PAYPAL_SUPABASE_URL, PAYPAL_SUPABASE_KEY);
+                paypalSupabaseReady = true;
+                console.log('✅ PayPal Supabase client initialized');
+            } catch (e) {
+                console.warn('⚠️ PayPal Supabase init failed:', e);
+                paypalSupabaseReady = false;
             }
 
             // ==============================================================
@@ -3299,12 +3534,10 @@
                 fileInput.addEventListener('change', function() {
                     const file = this.files[0];
                     if (file) {
-                        // Show filename
                         if (labelTextEl) {
                             labelTextEl.textContent = file.name.length > 20 ? file.name.slice(0, 18) + '…' : file.name;
                             labelTextEl.style.color = '#34d399';
                         }
-                        // Show preview
                         const reader = new FileReader();
                         reader.onload = function(e) {
                             previewEl.src = e.target.result;
@@ -3322,7 +3555,6 @@
                 });
             }
 
-            // Setup all image previews
             setupImagePreview(
                 document.getElementById('mediaFileInput'),
                 document.getElementById('imagePreview'),
@@ -3380,19 +3612,15 @@
                 updateCounter();
             }
 
-            // Attach click handlers to image wrappers
             function attachLightboxListeners(container) {
                 const wrappers = container.querySelectorAll('.post-image-wrapper:has(img)');
                 wrappers.forEach(wrapper => {
                     const img = wrapper.querySelector('img');
                     if (!img || !img.src) return;
-                    // Remove old listener to avoid duplicates
                     wrapper.removeEventListener('click', wrapper._lbHandler);
                     const handler = function(e) {
-                        // Don't trigger if clicked on blur-badge or video
                         if (e.target.closest('.blur-badge')) return;
                         if (e.target.closest('video')) return;
-                        // Collect all images from the same feed container
                         const feedContainer = this.closest('.feed-list');
                         const allImgs = [];
                         if (feedContainer) {
@@ -3400,7 +3628,6 @@
                                 if (el.src) allImgs.push(el.src);
                             });
                         } else {
-                            // fallback: all images on page
                             document.querySelectorAll('.post-image-wrapper img').forEach(el => {
                                 if (el.src) allImgs.push(el.src);
                             });
@@ -3412,14 +3639,12 @@
                 });
             }
 
-            // Call after rendering
             function attachLightboxToAllFeeds() {
                 [feedPublic, feedMembers, feedSubscribers].forEach(feed => {
                     if (feed) attachLightboxListeners(feed);
                 });
             }
 
-            // Lightbox event listeners
             lbClose.addEventListener('click', closeLightbox);
             lbPrev.addEventListener('click', () => navigate(-1));
             lbNext.addEventListener('click', () => navigate(1));
@@ -3438,7 +3663,7 @@
             });
 
             // ==============================================================
-            // RENDER POSTS (overridden to include lightbox hooks)
+            // RENDER POSTS
             // ==============================================================
             let postsCache = {};
             let commentsMap = new Map();
@@ -3589,13 +3814,12 @@
                     }
                 }));
 
-                // Attach lightbox listeners to images in this container
                 attachLightboxListeners(container);
                 observePostViews();
             }
 
             // ==============================================================
-            // INTERACTION HANDLERS (like, bookmark, blur, comments)
+            // INTERACTION HANDLERS
             // ==============================================================
             async function toggleBlur(e) {
                 const btn = e.currentTarget;
@@ -4050,7 +4274,6 @@
                         if (preview) { preview.classList.remove('visible');
                             preview.src = ''; }
                     }
-                    // Reset file label
                     const labelMap = {
                         'publishBtn': 'fileLabelText',
                         'membersPublishBtn': 'membersFileLabelText',
@@ -4098,16 +4321,13 @@
             });
 
             // ==============================================================
-            // NEW FUNCTION: Increment total visitor count using sitestats table
+            // INCREMENT TOTAL VISITS
             // ==============================================================
             async function incrementTotalVisits() {
                 if (!supabaseReady) return null;
                 try {
-                    // Try to update, and if no row exists, insert with 1001
                     const { data, error } = await supabase.rpc('increment_visitor_count');
-                    // If RPC doesn't exist, fallback to direct update
                     if (error && error.message && error.message.includes('function')) {
-                        // Direct update with fallback insert
                         let { data: current, error: selectError } = await supabase
                             .from('sitestats')
                             .select('totalvisits')
@@ -4115,7 +4335,6 @@
                             .single();
 
                         if (selectError && selectError.code === 'PGRST116') {
-                            // No row, insert with initial 1001
                             const { error: insertError } = await supabase
                                 .from('sitestats')
                                 .insert({ id: 1, totalvisits: 1001 });
@@ -4126,7 +4345,7 @@
                         }
 
                         let currentCount = current?.totalvisits || 1001;
-                        if (currentCount >= 99999) return currentCount; // cap
+                        if (currentCount >= 99999) return currentCount;
                         const newCount = currentCount + 1;
                         const { error: updateError } = await supabase
                             .from('sitestats')
@@ -4137,7 +4356,6 @@
                     } else if (error) {
                         throw error;
                     } else {
-                        // RPC succeeded
                         return Number(data);
                     }
                 } catch (e) {
@@ -4147,7 +4365,7 @@
             }
 
             // ==============================================================
-            // FETCH STATS (now reads total visitors from sitestats)
+            // FETCH STATS
             // ==============================================================
             async function fetchStats() {
                 if (!supabaseReady) {
@@ -4204,7 +4422,6 @@
                         .gte('last_seen', fiveMinAgo);
                     if (err5) throw err5;
 
-                    // ---- Read total visitors from sitestats ----
                     let visitorCount = 1001;
                     const { data: statsData, error: statsError } = await supabase
                         .from('sitestats')
@@ -4213,12 +4430,7 @@
                         .single();
                     if (!statsError && statsData) {
                         visitorCount = statsData.totalvisits || 1001;
-                    } else {
-                        // If table doesn't exist, create it via insert (will fail if no table)
-                        // We'll just use fallback and let the increment create it
-                        // But for display, we'll use default.
                     }
-                    // ---------------------------------------------
 
                     statPosts.textContent = postsCount || 0;
                     statReplies.textContent = repliesCount || 0;
@@ -4235,10 +4447,6 @@
                     console.error('Stats fetch error:', err);
                 }
             }
-
-            // ==============================================================
-            // VISITOR TRACKING (removed – no longer used for total visitors)
-            // ==============================================================
 
             // ==============================================================
             // AUTH
@@ -4371,6 +4579,8 @@
                         adminTabBtn.style.display = 'none';
                     }
                     checkSubscriberStatus(user);
+                    // Update PayPal checkout UI
+                    updatePaypalCheckoutUI(user);
                 } else {
                     authBtn.innerHTML = `<i class="fas fa-sign-in-alt"></i> Login`;
                     authBtn.className = 'auth-btn auth-login';
@@ -4384,6 +4594,7 @@
                     subscriberRequestPending.style.display = 'none';
                     subscribersCreatePost.style.display = 'none';
                     subscribersLoginPrompt.style.display = 'block';
+                    updatePaypalCheckoutUI(null);
                 }
                 refreshTicker();
             }
@@ -5040,29 +5251,239 @@
             }
 
             // ==============================================================
-            // STARTUP – increment visitor count and then load everything
+            // PAYPAL CHECKOUT — BOTTOM OF PAGE
             // ==============================================================
-            // Show intro overlay for 2 seconds, then hide
+            let paypalRendered = false;
+            const paypalContainer = document.getElementById('paypalButtonContainer');
+            const paypalStatusMsg = document.getElementById('paypalStatusMsg');
+            const paypalStatusText = document.getElementById('paypalStatusText');
+            const paypalStatusDot = document.getElementById('paypalStatusDot');
+            const subscriberBadgeContainer = document.getElementById('subscriberBadgeContainer');
+
+            async function callPaypalEdgeFunction(functionName, bodyData) {
+                if (!paypalSupabaseReady) throw new Error('PayPal Supabase not available');
+                const { data, error } = await paypalSupabase.functions.invoke(functionName, { body: bodyData });
+                if (error) throw new Error(error.message || 'Function invocation failed');
+                return data;
+            }
+
+            async function checkPaypalSubscriptionStatus(userId) {
+                if (!userId || !paypalSupabaseReady) return false;
+                try {
+                    const { data, error } = await paypalSupabase
+                        .from('orders')
+                        .select('id')
+                        .eq('user_id', userId)
+                        .eq('status', 'captured')
+                        .limit(1);
+                    if (error) { console.error('Subscription check error:', error); return false; }
+                    return data && data.length > 0;
+                } catch (e) { return false; }
+            }
+
+            function renderPayPalButton() {
+                if (paypalRendered) return;
+                if (typeof paypal === 'undefined') {
+                    console.warn('PayPal SDK not loaded yet');
+                    if (paypalStatusMsg) {
+                        paypalStatusMsg.className = 'paypal-status-msg error';
+                        paypalStatusMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> PayPal SDK failed to load. Please refresh.';
+                    }
+                    return;
+                }
+
+                paypalContainer.innerHTML = '';
+
+                try {
+                    paypal.Buttons({
+                        style: {
+                            shape: 'pill',
+                            color: 'gold',
+                            layout: 'vertical',
+                            label: 'paypal',
+                            height: 44
+                        },
+                        createOrder: async function(data, actions) {
+                            if (!currentUser) {
+                                alert('Please log in first to subscribe.');
+                                return;
+                            }
+                            try {
+                                const result = await callPaypalEdgeFunction('create-paypal-order', {
+                                    amount: '19.99',
+                                    currency: 'USD',
+                                    description: 'Pulse Premium Subscription'
+                                });
+                                return result.orderId;
+                            } catch (err) {
+                                alert('Failed to create order: ' + err.message);
+                                throw err;
+                            }
+                        },
+                        onApprove: async function(data, actions) {
+                            try {
+                                if (paypalStatusMsg) {
+                                    paypalStatusMsg.className = 'paypal-status-msg';
+                                    paypalStatusMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing payment...';
+                                }
+                                const captureResult = await callPaypalEdgeFunction('capture-paypal-order', {
+                                    paypal_order_id: data.orderID,
+                                    user_email: currentUser?.email || 'anonymous'
+                                });
+                                console.log('Capture result:', captureResult);
+
+                                if (paypalStatusMsg) {
+                                    paypalStatusMsg.className = 'paypal-status-msg';
+                                    paypalStatusMsg.innerHTML = '✅ Payment successful! You now have full access. 🎉';
+                                }
+                                if (paypalStatusText) paypalStatusText.textContent = 'Subscribed ✅';
+                                if (paypalStatusDot) {
+                                    paypalStatusDot.className = 'dot online';
+                                    paypalStatusDot.style.background = '#34d399';
+                                }
+
+                                fireConfetti();
+                                alert('✅ Payment successful! You now have access to premium content.');
+
+                                if (currentUser) {
+                                    const isSub = await checkPaypalSubscriptionStatus(currentUser.id);
+                                    if (isSub) {
+                                        subscriberBadgeContainer.innerHTML =
+                                            `<span class="subscriber-badge-active"><i class="fas fa-star"></i> Premium Subscriber</span>`;
+                                    }
+                                }
+
+                                paypalContainer.innerHTML =
+                                    '<div class="paypal-status-msg" style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);"><i class="fas fa-check-circle" style="color:#34d399;"></i> Thank you for subscribing! You now have premium access.</div>';
+                                paypalRendered = true;
+
+                            } catch (err) {
+                                console.error('Capture error:', err);
+                                alert('Capture failed: ' + err.message);
+                                if (paypalStatusMsg) {
+                                    paypalStatusMsg.className = 'paypal-status-msg error';
+                                    paypalStatusMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + err
+                                        .message;
+                                }
+                            }
+                        },
+                        onError: function(err) {
+                            const msg = 'PayPal error: ' + (err.message || JSON.stringify(err));
+                            console.error(msg);
+                            alert(msg);
+                            if (paypalStatusMsg) {
+                                paypalStatusMsg.className = 'paypal-status-msg error';
+                                paypalStatusMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + msg;
+                            }
+                            if (paypalStatusText) paypalStatusText.textContent = 'Error';
+                            if (paypalStatusDot) {
+                                paypalStatusDot.className = 'dot offline';
+                                paypalStatusDot.style.background = '#ef4444';
+                            }
+                        }
+                    }).render(paypalContainer);
+                    paypalRendered = true;
+                    if (paypalStatusMsg) {
+                        paypalStatusMsg.className = 'paypal-status-msg';
+                        paypalStatusMsg.innerHTML = '<i class="fas fa-check-circle" style="color:#34d399;"></i> Ready to subscribe';
+                    }
+                    if (paypalStatusText) paypalStatusText.textContent = 'Ready';
+                    if (paypalStatusDot) {
+                        paypalStatusDot.className = 'dot online';
+                        paypalStatusDot.style.background = '#34d399';
+                    }
+                } catch (e) {
+                    console.error('PayPal render error:', e);
+                    if (paypalStatusMsg) {
+                        paypalStatusMsg.className = 'paypal-status-msg error';
+                        paypalStatusMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error loading PayPal: ' + e
+                            .message;
+                    }
+                }
+            }
+
+            async function updatePaypalCheckoutUI(user) {
+                if (!paypalContainer) return;
+
+                if (!user) {
+                    paypalContainer.innerHTML = `
+                        <div class="auth-required-msg">
+                            <i class="fas fa-lock" style="color:#a78bfa; font-size:1.2rem; display:block; margin-bottom:0.3rem;"></i>
+                            Please <a onclick="openLoginModal()">log in</a> to subscribe.
+                        </div>
+                    `;
+                    subscriberBadgeContainer.innerHTML = '';
+                    paypalRendered = true;
+                    if (paypalStatusText) paypalStatusText.textContent = 'Login required';
+                    if (paypalStatusDot) {
+                        paypalStatusDot.className = 'dot offline';
+                        paypalStatusDot.style.background = '#64748b';
+                    }
+                    return;
+                }
+
+                try {
+                    const isSubscriber = await checkPaypalSubscriptionStatus(user.id);
+                    if (isSubscriber) {
+                        paypalContainer.innerHTML =
+                            `<div class="paypal-status-msg" style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);"><i class="fas fa-check-circle" style="color:#34d399;"></i> You are already a premium subscriber! ✅</div>`;
+                        subscriberBadgeContainer.innerHTML =
+                            `<span class="subscriber-badge-active"><i class="fas fa-star"></i> Premium Subscriber</span>`;
+                        paypalRendered = true;
+                        if (paypalStatusText) paypalStatusText.textContent = 'Subscribed ✅';
+                        if (paypalStatusDot) {
+                            paypalStatusDot.className = 'dot online';
+                            paypalStatusDot.style.background = '#34d399';
+                        }
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('Subscription check error:', e);
+                }
+
+                subscriberBadgeContainer.innerHTML = '';
+                paypalRendered = false;
+                renderPayPalButton();
+                if (paypalStatusText) paypalStatusText.textContent = 'Ready';
+                if (paypalStatusDot) {
+                    paypalStatusDot.className = 'dot online';
+                    paypalStatusDot.style.background = '#34d399';
+                }
+            }
+
+            // ==============================================================
+            // DONATE TAB - SCROLL TO BOTTOM
+            // ==============================================================
+            const donateTabBtn = document.getElementById('donateTabBtn');
+            if (donateTabBtn) {
+                donateTabBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const checkoutSection = document.getElementById('paypalCheckoutSection');
+                    if (checkoutSection) {
+                        checkoutSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            }
+
+            // ==============================================================
+            // STARTUP
+            // ==============================================================
             setTimeout(() => {
                 const overlay = document.getElementById('intro-overlay');
                 if (overlay) overlay.classList.add('hidden');
             }, 2000);
 
-            // Main startup
             (async function init() {
-                // First, increment the total visitor count
                 const newCount = await incrementTotalVisits();
                 if (newCount !== null && statVisitors) {
                     statVisitors.textContent = newCount;
                 }
 
-                // Then proceed with auth, fetch stats, etc.
                 await checkAuth();
                 await fetchStats();
                 switchTab('public');
                 subscribe();
 
-                // Periodic refresh of stats (but don't increment again)
                 setInterval(async () => {
                     await fetchStats();
                     await refreshTicker();
@@ -5073,6 +5494,8 @@
                 console.log('🚀 Pulse loaded' + (supabaseReady ? ' with Supabase' :
                     ' (offline mode - Supabase not available)'));
             })();
+
+            window.openLoginModal = openLoginModal;
 
         })();
     </script>
